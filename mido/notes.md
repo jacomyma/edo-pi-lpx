@@ -1,10 +1,10 @@
-:: Install Raspberry Pi 4
+# Install Raspberry Pi 4
 I followed the classic steps for a headless install.
 Enable SSH and the WiFi through my phone at install.
 Install VNC from SSH.
 Connect through VNC from my computer through my phone's WiFi.
 
-:: Install the stuff necessary to a tutorial.
+# Install the stuff necessary to a tutorial.
 I follow this tutorial: https://www.linuxrouen.fr/wp/programmation/introduction-a-la-programmation-midi-avec-python-mido-et-rtmidi-23805/
 I installed:
 * Python 3
@@ -17,7 +17,7 @@ I installed:
 * QJackCtl (app store) that is supposed to give Audio top priority
 * Patchage (app store) that visualizes what is connected to what
 
-:: First test
+# First test
 I have the model:cycles on the midi port of the RK005.
 I send a note to it.
 In the python console, I use the following lines:
@@ -29,4 +29,20 @@ In the python console, I use the following lines:
 >>> outport.send(msg)
 >>> outport.send(msg2)
 ```
+
+Note: when I retried, the RK005 output had a different reference:
+'RK005:RK005 MIDI 1 28:0'
+
+# Second try
+Options in note messages:
+
+```
+>>> import mido
+>>> outport = mido.open_output('RK005:RK005 MIDI 1 28:0')
+>>> msg = mido.Message('note_on', note=100)
+>>> msg2 = mido.Message('note_off', note=100)
+>>> outport.send(msg)
+>>> outport.send(msg2)
+```
+
 
