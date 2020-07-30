@@ -29,6 +29,10 @@ In the python console, I use the following lines:
 >>> outport.send(msg)
 >>> outport.send(msg2)
 ```
+To get the name of the outputs (idem for inputs):
+```
+print(mido.get_output_names())
+```
 
 Note: when I retried, the RK005 output had a different reference:
 'RK005:RK005 MIDI 1 28:0'
