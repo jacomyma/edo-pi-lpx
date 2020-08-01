@@ -49,4 +49,34 @@ Options in note messages:
 >>> outport.send(msg2)
 ```
 
+# Third try: light up the Launchpad
+```
+>>> lp = mido.open_output('Launchpad X:Launchpad X MIDI 1 24:0')
+>>> flashing = mido.Message('note_on', channel=1, note=81, velocity=19)
+>>> lp.send(flashing)
+```
+=> Rien ne se passe T_T
+Par contre, si j'exécute ensuite le programme du tuto, là le carré vert clignotant apparaît !!!
+
+# Fourth try
+Trying with an io port + close port
+
+```
+import mido
+lp = mido.open_ioport('Launchpad X:Launchpad X MIDI 1 24:0')
+flashing = mido.Message('note_on', channel=1, note=81, velocity=19)
+lp.send(flashing)
+lp.close()
+```
+=> Nothing happens T_T
+That's because it is the wrong port!!!
+This one works:
+```
+lp = mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1')
+lp.send(mido.Message('note_on', channel=1, note=81, velocity=19))
+# This should flash
+lp.send(mido.Message('note_off', channel=1, note=81))
+lp.close()
+# Back to empty state
+```
 
