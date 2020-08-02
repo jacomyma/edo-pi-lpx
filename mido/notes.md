@@ -80,3 +80,23 @@ lp.close()
 # Back to empty state
 ```
 
+# 2020-08-02 Attempts at MPE
+I want to test a MPE layout for the Launchpad. I do not have a MPE hardware synth right now, so I try to use a software synth.
+Config:
+My script uses the output named ```Midi Through:Midi Through Port-0 14:0```
+In addition, I launch QSynth and in Patchage, I plug the Midi Through port to QSynth.
+
+When I run the script, if I trig a Launchpad key, it lights up a green light in Qsynth. The audio output, however, is mute.
+
+Note: VNC does not support sound anyways. It is however possible to force the sound through headphones, via ```sudo raspi-config``` in advanced options > audio.
+I successfully played Youtube videos through headphone audio, but I could not have qSynth work.
+I decided to install LMMS (following a recommendation by Sevish) since it comes with ZynAddSubFX. Unfortunately, I could not make it work.
+=> it's a failure
+I was finally capable of having something that works:
+I use qsynth in ALSA configuration (Qsynth > Setup > Audio > Audio driver)
+I have to connect the midi input through qjackctl:
+```
+qjackctl &
+qsynth
+```
+
