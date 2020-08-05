@@ -59,14 +59,12 @@ def edonote_to_12edo(edonote):
     return [key_12edo, pitch_correction]
     
 round_robin = {
-    "allowed_channels": [True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True],
-    "edonotes": [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False],
-    "current": 0
+    "allowed_channels": [True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False],
+    "edonotes": [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],
+    "current": 15
 }
 
 def play_edonote(msg, edonote, round_robin):
-    global chan_current, used_channels
-    
     # Compute note and pitch for edonote
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
     
@@ -75,47 +73,71 @@ def play_edonote(msg, edonote, round_robin):
     newnote = msg.type == 'note_on' and not endnote
     if endnote:
         # Find channels using this edonote
-        for i in range(1,16):
-            chan = (round_robin['current']+i)%16
+        for chan in range(0,15):
             allowed = round_robin['allowed_channels'][chan]
             chan_edonote = round_robin['edonotes'][chan]
             if allowed and chan_edonote == edonote:
-                round_robin['edonotes'][chan] = False
+                round_robin['edonotes'][chan] = None
 
                 # Unplay note
-                pitch = mido.Message('pitchwheel', channel=chan, pitch=0)
-                outport.send(pitch)
-                outnote = msg.copy(channel=chan)
-                outport.send(outnote)
+                key = msg.copy(channel=chan, note=key_12edo)
+                outport.send(key)
 
     elif newnote:
         # Find next empty channel
-        target_chan = False
-        for i in range(1,16):
+        target_chan = None
+        for i in range(1,17):
             chan = (round_robin['current']+i)%16
             allowed = round_robin['allowed_channels'][chan]
             chan_edonote = round_robin['edonotes'][chan]
-            if allowed and not edonote:
+            if allowed and (chan_edonote == None):
                 target_chan = chan
                 break
-        if not target_chan:
-            for i in range(1,16):
+        if target_chan == None:
+            for i in range(1,17):
                 chan = (round_robin['current']+i)%16
                 allowed = round_robin['allowed_channels'][chan]
                 if allowed:
                     target_chan = chan
+                    break
+            # Since we override a channel, we send a note_off message
             [old_key_12edo, old_pitch_correction] = edonote_to_12edo(round_robin['edonotes'][target_chan])
             outport.send(mido.Message('note_off', channel=target_chan, note=old_key_12edo))
-            
+
         round_robin['edonotes'][target_chan] = edonote
         round_robin['current'] = target_chan
 
         # Play note
+        # Pitch correction
         pitch = mido.Message('pitchwheel', channel=target_chan, pitch=pitch_correction)
         outport.send(pitch)
-        outnote = msg.copy(note=key_12edo, channel=target_chan)
-        outport.send(outnote)
+        # Key
+        key = msg.copy(note=key_12edo, channel=target_chan)
+        outport.send(key)
+
+def send_aftertouch(msg, edonote, round_robin):
+    # Compute note and pitch for edonote
+    [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
     
+    # Manage round robin for channels
+    endnote = msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0)
+    newnote = msg.type == 'note_on' and not endnote
+    
+    # Find channels using this edonote
+    for chan in range(0,15):
+        allowed = round_robin['allowed_channels'][chan]
+        chan_edonote = round_robin['edonotes'][chan]
+        if allowed and (chan_edonote == edonote):
+            # Send aftertouch
+            aftertouch = msg.copy(channel=chan, note=key_12edo)
+            outport.send(aftertouch)
+            
+            # Send aftertouch to channel (for the model:cycles)
+            #cc_target = 7 # Volume/dist on the model:cycles
+            #cc = mido.Message('control_change', channel=chan, control=cc_target, value=msg.value)
+            #outport.send(cc)
+            
+            
 with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lp:
     # Reset
     for pad in pads_midinote:
@@ -150,4 +172,9 @@ with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lp:
                         if msg_edonote == edonote:
                             pad = xy_to_pad_note(xy)
                             lp.send(mido.Message('note_on', channel=0, note=pad, velocity=21))
+
+        elif msg.type == "polytouch":
+            msg_xy = pad_note_to_xy(msg.note)
+            msg_edonote = xy_to_edonote(msg_xy)
+            send_aftertouch(msg, msg_edonote, round_robin)
                 
