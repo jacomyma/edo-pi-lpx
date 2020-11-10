@@ -100,3 +100,8 @@ qjackctl &
 qsynth
 ```
 
+
+# 2020-11-10 Connecting the Launchpad X to any output
+This is in the script "schedule(fail).py".
+Result : for some reason, something in ALSA always end up breaking even if we do almost nothing, for instance just reading the outputs.
+I don't understand why. I have to try something else.
