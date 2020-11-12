@@ -1,8 +1,9 @@
 import mido;
 
 # Out port
-#outport = mido.open_output('RK005:RK005 MIDI 1 28:0')
-outport = mido.open_output('Midi Through:Midi Through Port-0 14:0')
+outport = mido.open_output('RK005:RK005 MIDI 1 28:0')
+#outport = mido.open_output('Skulpt Synth:Skulpt Synth MIDI 1 28:0')
+#outport = mido.open_output('ContinuuMini SN000220:ContinuuMini SN000220 MIDI 1 28:0')
 
 # Build pads
 pads_midinote = []
@@ -46,7 +47,8 @@ def xy_to_edonote(xy):
     return grid_offset + x + row_offset * y
 
 # Playing edo notes
-pitch_bend_range_semitones = 2 # This must match the synth's settings
+pitch_bend_range_semitones = 48 # This must match the synth's settings
+                                # Modal Skulpt: 48
 root_note = 60 # 60 is the middle C
 
 def edonote_to_12edo(edonote):
@@ -57,9 +59,12 @@ def edonote_to_12edo(edonote):
     key_12edo = root_note + key_offset
     pitch_correction = round(8191 * key_correction / pitch_bend_range_semitones)
     return [key_12edo, pitch_correction]
-    
+
+# Note: channels 1 and 16 should not be used, as they are
+# considered master, which means their values, including pitch,
+# apply to all.
 round_robin = {
-    "allowed_channels": [True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False],
+    "allowed_channels": [False, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False],
     "edonotes": [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],
     "current": 15
 }
@@ -102,7 +107,8 @@ def play_edonote(msg, edonote, round_robin):
                     break
             # Since we override a channel, we send a note_off message
             [old_key_12edo, old_pitch_correction] = edonote_to_12edo(round_robin['edonotes'][target_chan])
-            outport.send(mido.Message('note_off', channel=target_chan, note=old_key_12edo))
+            off = mido.Message('note_off', channel=target_chan, note=old_key_12edo)
+            outport.send(off)
 
         round_robin['edonotes'][target_chan] = edonote
         round_robin['current'] = target_chan
@@ -129,14 +135,11 @@ def send_aftertouch(msg, edonote, round_robin):
         chan_edonote = round_robin['edonotes'][chan]
         if allowed and (chan_edonote == edonote):
             # Send aftertouch
-            aftertouch = msg.copy(channel=chan, note=key_12edo)
+            aftertouch = mido.Message('aftertouch')
+            aftertouch.channel = chan
+            aftertouch.value = msg.value
+            aftertouch.time = msg.time
             outport.send(aftertouch)
-            
-            # Send aftertouch to channel (for the model:cycles)
-            #cc_target = 7 # Volume/dist on the model:cycles
-            #cc = mido.Message('control_change', channel=chan, control=cc_target, value=msg.value)
-            #outport.send(cc)
-            
             
 with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lp:
     # Reset
