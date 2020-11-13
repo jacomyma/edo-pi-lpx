@@ -1,9 +1,9 @@
 import mido;
 
 # Out port
-outport = mido.open_output('RK005:RK005 MIDI 1 28:0')
+#outport = mido.open_output('RK005:RK005 MIDI 1 28:0')
 #outport = mido.open_output('Skulpt Synth:Skulpt Synth MIDI 1 28:0')
-#outport = mido.open_output('ContinuuMini SN000220:ContinuuMini SN000220 MIDI 1 28:0')
+outport = mido.open_output('ContinuuMini SN000220:ContinuuMini SN000220 MIDI 1 28:0')
 
 # Build pads
 pads_midinote = []
@@ -47,8 +47,9 @@ def xy_to_edonote(xy):
     return grid_offset + x + row_offset * y
 
 # Playing edo notes
-pitch_bend_range_semitones = 48 # This must match the synth's settings
+pitch_bend_range_semitones = 96 # This must match the synth's settings
                                 # Modal Skulpt: 48
+                                # Continuumini: 96
 root_note = 60 # 60 is the middle C
 
 def edonote_to_12edo(edonote):
