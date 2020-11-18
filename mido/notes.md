@@ -105,3 +105,18 @@ qsynth
 This is in the script "schedule(fail).py".
 Result : for some reason, something in ALSA always end up breaking even if we do almost nothing, for instance just reading the outputs.
 I don't understand why. I have to try something else.
+
+
+# 2020-11-18 Running a script at startup
+I want to run ```run.py``` after every reboot. The idea is to use a CRON command.
+The command I want to run is then ```python3 mido/run.py``` (from this directory).
+First, open the cron editor:
+```
+crontab -e
+```
+
+Then add a line with the complete path to the script, using my specific case:
+```
+@reboot sleep 10 && python3 /home/pi/github/autoconnect-midi-pi/mido/run.py
+```
+The sleep time is necessary, for an unknown reason (it does not work without it).
