@@ -1,12 +1,8 @@
 import mido;
 
-# Out port
-#outport = mido.open_output('RK005:RK005 MIDI 1 28:0')
-#outport = mido.open_output('Skulpt Synth:Skulpt Synth MIDI 1 28:0')
-outport = mido.open_output('ContinuuMini SN000220:ContinuuMini SN000220 MIDI 1 28:0')
-
 settings = {
     'edo': 9,
+    'allowed_channels': [False, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False],
     'row_offset':4,
     'pitch_bend_range_semitones': 96,   # This must match the synth's settings
                                         # Modal Skulpt: 48
@@ -31,7 +27,8 @@ for note in pads_midinote:
     pads_xy.append(pad_note_to_xy(note))
 
 # Note: I use the term "edonote" to refer to edo-specific note notation.
-# In face, an edonote is not even a note. It only relates to the grid display.
+# Edo means "Equal division of octave".
+# In fact, an edonote is not even a note. It only relates to the grid display.
 # An edonote translates to an actual note given a root pitch.
 # The edonote 0 equals the root pitch. The root pitch typically equals the middle C.
 # In an edo of X, the edonote X equals to one octave above the root pitch.
@@ -64,12 +61,11 @@ def edonote_to_12edo(edonote, settings):
 # considered master, which means their values, including pitch,
 # apply to all.
 round_robin = {
-    "allowed_channels": [False, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False],
     "edonotes": [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None],
     "current": 15
 }
 
-def play_edonote(msg, edonote, round_robin, settings):
+def play_edonote(msg, edonote, round_robin, settings, outports):
     # Compute note and pitch for edonote
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote, settings)
     
@@ -79,21 +75,22 @@ def play_edonote(msg, edonote, round_robin, settings):
     if endnote:
         # Find channels using this edonote
         for chan in range(0,15):
-            allowed = round_robin['allowed_channels'][chan]
+            allowed = settings['allowed_channels'][chan]
             chan_edonote = round_robin['edonotes'][chan]
             if allowed and chan_edonote == edonote:
                 round_robin['edonotes'][chan] = None
 
                 # Unplay note
                 key = msg.copy(channel=chan, note=key_12edo)
-                outport.send(key)
+                for outport in outports:
+                    outport.send(key)
 
     elif newnote:
         # Find next empty channel
         target_chan = None
         for i in range(1,17):
             chan = (round_robin['current']+i)%16
-            allowed = round_robin['allowed_channels'][chan]
+            allowed = settings['allowed_channels'][chan]
             chan_edonote = round_robin['edonotes'][chan]
             if allowed and (chan_edonote == None):
                 target_chan = chan
@@ -101,14 +98,15 @@ def play_edonote(msg, edonote, round_robin, settings):
         if target_chan == None:
             for i in range(1,17):
                 chan = (round_robin['current']+i)%16
-                allowed = round_robin['allowed_channels'][chan]
+                allowed = settings['allowed_channels'][chan]
                 if allowed:
                     target_chan = chan
                     break
             # Since we override a channel, we send a note_off message
             [old_key_12edo, old_pitch_correction] = edonote_to_12edo(round_robin['edonotes'][target_chan], settings)
             off = mido.Message('note_off', channel=target_chan, note=old_key_12edo)
-            outport.send(off)
+            for outport in outports:
+                outport.send(off)
 
         round_robin['edonotes'][target_chan] = edonote
         round_robin['current'] = target_chan
@@ -116,12 +114,14 @@ def play_edonote(msg, edonote, round_robin, settings):
         # Play note
         # Pitch correction
         pitch = mido.Message('pitchwheel', channel=target_chan, pitch=pitch_correction)
-        outport.send(pitch)
+        for outport in outports:
+            outport.send(pitch)
         # Key
         key = msg.copy(note=key_12edo, channel=target_chan)
-        outport.send(key)
+        for outport in outports:
+            outport.send(key)
 
-def send_aftertouch(msg, edonote, round_robin, settings):
+def send_aftertouch(msg, edonote, round_robin, settings, outports):
     # Compute note and pitch for edonote
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote, settings)
     
@@ -131,7 +131,7 @@ def send_aftertouch(msg, edonote, round_robin, settings):
     
     # Find channels using this edonote
     for chan in range(0,15):
-        allowed = round_robin['allowed_channels'][chan]
+        allowed = settings['allowed_channels'][chan]
         chan_edonote = round_robin['edonotes'][chan]
         if allowed and (chan_edonote == edonote):
             # Send aftertouch
@@ -139,9 +139,10 @@ def send_aftertouch(msg, edonote, round_robin, settings):
             aftertouch.channel = chan
             aftertouch.value = msg.value
             aftertouch.time = msg.time
-            outport.send(aftertouch)
+            for outport in outports:
+                outport.send(aftertouch)
 
-def xedo(settings):
+def xedo(settings, outports):
     with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lp:
         # Reset
         for pad in pads_midinote:
@@ -152,6 +153,11 @@ def xedo(settings):
             if xy[0]<8 and xy[1]<8:
                 display_default(xy, lp, settings)
             
+        # UI: Exit pad
+        exit_pad_note = xy_to_pad_note([7,8])
+        lp.send(mido.Message('note_on', channel=0, note=exit_pad_note, velocity=60))
+        
+        
         # Listen to notes
         for msg in lp:
             if msg.type == "note_on":
@@ -159,7 +165,7 @@ def xedo(settings):
                 msg_edonote = xy_to_edonote(msg_xy, settings)
                 
                 # Output
-                play_edonote(msg, msg_edonote, round_robin, settings)
+                play_edonote(msg, msg_edonote, round_robin, settings, outports)
                 
                 # Launchpad display
                 if msg.velocity == 0:
@@ -180,6 +186,14 @@ def xedo(settings):
             elif msg.type == "polytouch":
                 msg_xy = pad_note_to_xy(msg.note)
                 msg_edonote = xy_to_edonote(msg_xy, settings)
-                send_aftertouch(msg, msg_edonote, round_robin, settings)
+                send_aftertouch(msg, msg_edonote, round_robin, settings, outports)
+            
+            elif msg.type == "control_change":
+                if msg.value == 0:
+                    if msg.control == exit_pad_note:
+                        for pad in pads_midinote:
+                            lp.send(mido.Message('note_off', note=pad))
+                        lp.send(mido.Message('note_on', channel=0, note=exit_pad_note, velocity=0))
+                        return "exit"
                     
 #xedo(settings)
