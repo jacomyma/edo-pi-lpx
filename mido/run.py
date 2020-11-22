@@ -17,10 +17,10 @@ settings = {
     'allowed_channels': [False, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False],
     'edo': 17,
     'row_offset': 7,
-    'pitch_bend_range_semitones': 96,   # This must match the synth's settings
+    'pitch_bend_range_semitones': 48,   # This must match the synth's settings
                                         # Modal Skulpt: 48
                                         # Continuumini: 96
-    'root_note': 60 # 60 is the middle C    
+    'root_note': 60 # 60 is the middle C
 }
 
 def log(msg):
@@ -38,32 +38,17 @@ def runState(state):
         with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
             switchToProgrammerMode(lpx, True)
             print(settings['edo'], "EDO")
-
-            # Connect the LPX to all midi outputs
-            # (except itself)
-            midi_outputs = []
-            outputs_str = ''
-            for port in mido.get_output_names():
-                if 'Launchpad' not in port and 'Through' not in port and 'RtMid' not in port:
-                    midi_outputs.append(mido.open_output(port))
-                    outputs_str = outputs_str+'<'+port+'> '
-
+            midi_outputs = getAllOtherMidiOutputs()
+            # Note: the line below executes the X-EDO script
+            # ad libitum, and only returns a value on exit.
             state = xedo.xedo(settings, midi_outputs)
             return runState(state)
+
     elif state == 'exit':
          with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
             switchToProgrammerMode(lpx, False)
-
-            # Connect the LPX to all midi outputs
-            # (except itself)
-            midi_outputs = []
-            outputs_str = ''
-            for port in mido.get_output_names():
-                if 'Launchpad' not in port and 'Through' not in port and 'RtMid' not in port:
-                    midi_outputs.append(mido.open_output(port))
-                    outputs_str = outputs_str+'<'+port+'> '
-
-            # For test: send anything
+            midi_outputs = getAllOtherMidiOutputs()
+            # Send any message from LPX to everyone else
             with mido.open_ioport(settings['launchpad_midi_id']) as lp:
                 for msg in lp:
                     for outport in midi_outputs:
@@ -71,6 +56,7 @@ def runState(state):
 
             #return
 
+# Test whether the Launchpad X is connected (iteratively, until it is)
 def testLPX(sc):
     global lpx
     try:
@@ -97,7 +83,18 @@ def switchToProgrammerMode(lpx, flag):
     except:
         print("Oops!", sys.exc_info()[0])
         log("ERROR: "+str(sys.exc_info()[0]))
-        
+
+def getAllOtherMidiOutputs():
+    # Connect the LPX to all midi outputs
+    # (except itself)
+    midi_outputs = []
+    outputs_str = ''
+    for port in mido.get_output_names():
+        if 'Launchpad' not in port and 'Through' not in port and 'RtMid' not in port:
+            midi_outputs.append(mido.open_output(port))
+            outputs_str = outputs_str+'<'+port+'> '
+    return midi_outputs
+
 s.enter(0, 1, testLPX, (s,))
 s.run()
 
