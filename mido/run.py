@@ -1,5 +1,5 @@
 import time, sched, mido, datetime
-import xedo
+import xedo, lpxPads as pads, screens
 
 # SETTINGS
 
@@ -34,27 +34,31 @@ s = sched.scheduler(time.time, time.sleep)
 
 def runState(state):
     print("Run",state,"mode")
+    midi_outputs = getAllOtherMidiOutputs()
     if state == 'edo':
         with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
             switchToProgrammerMode(lpx, True)
             print(settings['edo'], "EDO")
-            midi_outputs = getAllOtherMidiOutputs()
+            
             # Note: the line below executes the X-EDO script
             # ad libitum, and only returns a value on exit.
-            state = xedo.xedo(settings, midi_outputs)
+            state = xedo.xedo(settings, lpx, midi_outputs)
             return runState(state)
 
     elif state == 'exit':
          with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
             switchToProgrammerMode(lpx, False)
-            midi_outputs = getAllOtherMidiOutputs()
+            
             # Send any message from LPX to everyone else
-            with mido.open_ioport(settings['launchpad_midi_id']) as lp:
-                for msg in lp:
-                    for outport in midi_outputs:
-                        outport.send(msg)
-
+            for msg in lpx:
+                for outport in midi_outputs:
+                    outport.send(msg)
             #return
+    else:
+        with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
+            switchToProgrammerMode(lpx, True)
+            state = screens.setScreen(settings, lpx, midi_outputs, state)
+            return runState(state)
 
 # Test whether the Launchpad X is connected (iteratively, until it is)
 def testLPX(sc):
@@ -75,11 +79,12 @@ def switchToProgrammerMode(lpx, flag):
         # The reference is in the LPX programmer's manual
         # https://fael-downloads-prod.focusrite.com/customer/prod/s3fs-public/downloads/Launchpad%20X%20-%20Programmers%20Reference%20Manual.pdf
         if flag:
+            print("Launchpad X switched to programmer mode")
             switch = mido.Message.from_hex('F0 00 20 29 02 0C 0E 01 F7')
         else:
+            print("Launchpad X switched to normal mode")
             switch = mido.Message.from_hex('F0 00 20 29 02 0C 0E 00 F7')
         lpx.send(switch)
-        print("Launchpad X switched to programmer mode")
     except:
         print("Oops!", sys.exc_info()[0])
         log("ERROR: "+str(sys.exc_info()[0]))

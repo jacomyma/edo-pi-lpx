@@ -115,54 +115,47 @@ def send_aftertouch(msg, edonote, round_robin, settings, outports):
             for outport in outports:
                 outport.send(aftertouch)
 
-def xedo(settings, outports):
-    with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lpx:
-        # Reset
-        pads.display_reset(lpx)
-        
-        # Default state
-        for xy in pads.pads_xy:
-            if xy[0]<8 and xy[1]<8:
-                display_default(xy, lpx, settings)
+def xedo(settings, lpx, outports):
+    # Reset
+    pads.display_reset(lpx, True)
+    
+    # Default state
+    for xy in pads.pads_xy:
+        if xy[0]<8 and xy[1]<8:
+            display_default(xy, lpx, settings)
+    
+    # Listen to notes
+    for msg in lpx:
+        if msg.type == "note_on":
+            msg_xy = pads.pad_note_to_xy(msg.note)
+            msg_edonote = xy_to_edonote(msg_xy, settings)
             
-        # UI: Exit pad
-        exit_pad_xy = [7,8]
-        exit_pad_note = pads.xy_to_pad_note(exit_pad_xy)
-        pads.display_vel(lpx, exit_pad_xy, 60)
-        
-        # Listen to notes
-        for msg in lpx:
-            if msg.type == "note_on":
-                msg_xy = pads.pad_note_to_xy(msg.note)
-                msg_edonote = xy_to_edonote(msg_xy, settings)
-                
-                # Output
-                play_edonote(msg, msg_edonote, round_robin, settings, outports)
-                
-                # Launchpad display
-                if msg.velocity == 0:
-                    # equivalent to note off
-                    for xy in pads.pads_xy:
-                        if xy[0]<8 and xy[1]<8:
-                            edonote = xy_to_edonote(xy, settings)
-                            if msg_edonote == edonote:
-                                display_default(xy, lpx, settings)
-                else:
-                    for xy in pads.pads_xy:
-                        if xy[0]<8 and xy[1]<8:
-                            edonote = xy_to_edonote(xy, settings)
-                            if msg_edonote == edonote:
-                                pads.display_vel(lpx, xy, 21)
+            # Output
+            play_edonote(msg, msg_edonote, round_robin, settings, outports)
+            
+            # Launchpad display
+            if msg.velocity == 0:
+                # equivalent to note off
+                for xy in pads.pads_xy:
+                    if xy[0]<8 and xy[1]<8:
+                        edonote = xy_to_edonote(xy, settings)
+                        if msg_edonote == edonote:
+                            display_default(xy, lpx, settings)
+            else:
+                for xy in pads.pads_xy:
+                    if xy[0]<8 and xy[1]<8:
+                        edonote = xy_to_edonote(xy, settings)
+                        if msg_edonote == edonote:
+                            pads.display_vel(lpx, xy, 21)
 
-            elif msg.type == "polytouch":
-                msg_xy = pads.pad_note_to_xy(msg.note)
-                msg_edonote = xy_to_edonote(msg_xy, settings)
-                send_aftertouch(msg, msg_edonote, round_robin, settings, outports)
-            
-            elif msg.type == "control_change":
-                if msg.value == 0:
-                    if msg.control == exit_pad_note:
-                        pads.display_reset(lpx)
-                        pads.display_off(lpx, exit_pad_xy)
-                        return "exit"
+        elif msg.type == "polytouch":
+            msg_xy = pads.pad_note_to_xy(msg.note)
+            msg_edonote = xy_to_edonote(msg_xy, settings)
+            send_aftertouch(msg, msg_edonote, round_robin, settings, outports)
+        
+        elif msg.type == "control_change":
+            if msg.value == 0:
+                check = pads.checkMenuMessage(msg)
+                if check != False:
+                    return check
 
