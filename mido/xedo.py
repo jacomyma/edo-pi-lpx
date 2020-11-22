@@ -1,30 +1,4 @@
-import mido;
-
-settings = {
-    'edo': 9,
-    'allowed_channels': [False, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False],
-    'row_offset':4,
-    'pitch_bend_range_semitones': 96,   # This must match the synth's settings
-                                        # Modal Skulpt: 48
-                                        # Continuumini: 96
-    'root_note': 60 # 60 is the middle C
-}
-
-# Build pads
-pads_midinote = []
-for y in range(1,10):
-    for x in range(1,10):
-        pads_midinote.append(x+y*10)
-
-def pad_note_to_xy(note):
-    return [(note-11)%10, round((note-11-(note-11)%10)/10)]
-
-def xy_to_pad_note(xy):
-    return 11 + xy[0] + 10*xy[1]
-
-pads_xy = []
-for note in pads_midinote:
-    pads_xy.append(pad_note_to_xy(note))
+import mido, lpxPads as pads;
 
 # Note: I use the term "edonote" to refer to edo-specific note notation.
 # Edo means "Equal division of octave".
@@ -37,7 +11,7 @@ for note in pads_midinote:
 def display_default(xy, lpx, settings):
     # Display root edonotes in pink
     edonote = xy_to_edonote(xy, settings)
-    pad = xy_to_pad_note(xy)
+    pad = pads.xy_to_pad_note(xy)
     if edonote%settings['edo'] == 0:
         lpx.send(mido.Message('note_on', channel=0, note=pad, velocity=94))
     else:
@@ -145,23 +119,23 @@ def send_aftertouch(msg, edonote, round_robin, settings, outports):
 def xedo(settings, outports):
     with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lp:
         # Reset
-        for pad in pads_midinote:
+        for pad in pads.pads_midinote:
             lp.send(mido.Message('note_off', note=pad))
         
         # Default state
-        for xy in pads_xy:
+        for xy in pads.pads_xy:
             if xy[0]<8 and xy[1]<8:
                 display_default(xy, lp, settings)
             
         # UI: Exit pad
-        exit_pad_note = xy_to_pad_note([7,8])
+        exit_pad_note = pads.xy_to_pad_note([7,8])
         lp.send(mido.Message('note_on', channel=0, note=exit_pad_note, velocity=60))
         
         
         # Listen to notes
         for msg in lp:
             if msg.type == "note_on":
-                msg_xy = pad_note_to_xy(msg.note)
+                msg_xy = pads.pad_note_to_xy(msg.note)
                 msg_edonote = xy_to_edonote(msg_xy, settings)
                 
                 # Output
@@ -170,30 +144,29 @@ def xedo(settings, outports):
                 # Launchpad display
                 if msg.velocity == 0:
                     # equivalent to note off
-                    for xy in pads_xy:
+                    for xy in pads.pads_xy:
                         if xy[0]<8 and xy[1]<8:
                             edonote = xy_to_edonote(xy, settings)
                             if msg_edonote == edonote:
                                 display_default(xy, lp, settings)
                 else:
-                    for xy in pads_xy:
+                    for xy in pads.pads_xy:
                         if xy[0]<8 and xy[1]<8:
                             edonote = xy_to_edonote(xy, settings)
                             if msg_edonote == edonote:
-                                pad = xy_to_pad_note(xy)
+                                pad = pads.xy_to_pad_note(xy)
                                 lp.send(mido.Message('note_on', channel=0, note=pad, velocity=21))
 
             elif msg.type == "polytouch":
-                msg_xy = pad_note_to_xy(msg.note)
+                msg_xy = pads.pad_note_to_xy(msg.note)
                 msg_edonote = xy_to_edonote(msg_xy, settings)
                 send_aftertouch(msg, msg_edonote, round_robin, settings, outports)
             
             elif msg.type == "control_change":
                 if msg.value == 0:
                     if msg.control == exit_pad_note:
-                        for pad in pads_midinote:
+                        for pad in pads.pads_midinote:
                             lp.send(mido.Message('note_off', note=pad))
                         lp.send(mido.Message('note_on', channel=0, note=exit_pad_note, velocity=0))
                         return "exit"
-                    
-#xedo(settings)
+
