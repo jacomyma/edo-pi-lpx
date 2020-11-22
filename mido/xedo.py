@@ -11,11 +11,10 @@ import mido, lpxPads as pads;
 def display_default(xy, lpx, settings):
     # Display root edonotes in pink
     edonote = xy_to_edonote(xy, settings)
-    pad = pads.xy_to_pad_note(xy)
     if edonote%settings['edo'] == 0:
-        lpx.send(mido.Message('note_on', channel=0, note=pad, velocity=94))
+        pads.display_vel(lpx, xy, 94)
     else:
-        lpx.send(mido.Message('note_off', note=pad))
+        pads.display_off(lpx, xy)
 
 def xy_to_edonote(xy, settings):
     bottomleft = -2*settings['edo'] # bottom-left note
@@ -117,23 +116,22 @@ def send_aftertouch(msg, edonote, round_robin, settings, outports):
                 outport.send(aftertouch)
 
 def xedo(settings, outports):
-    with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lp:
+    with mido.open_ioport('Launchpad X:Launchpad X MIDI 2 24:1') as lpx:
         # Reset
-        for pad in pads.pads_midinote:
-            lp.send(mido.Message('note_off', note=pad))
+        pads.display_reset(lpx)
         
         # Default state
         for xy in pads.pads_xy:
             if xy[0]<8 and xy[1]<8:
-                display_default(xy, lp, settings)
+                display_default(xy, lpx, settings)
             
         # UI: Exit pad
-        exit_pad_note = pads.xy_to_pad_note([7,8])
-        lp.send(mido.Message('note_on', channel=0, note=exit_pad_note, velocity=60))
-        
+        exit_pad_xy = [7,8]
+        exit_pad_note = pads.xy_to_pad_note(exit_pad_xy)
+        pads.display_vel(lpx, exit_pad_xy, 60)
         
         # Listen to notes
-        for msg in lp:
+        for msg in lpx:
             if msg.type == "note_on":
                 msg_xy = pads.pad_note_to_xy(msg.note)
                 msg_edonote = xy_to_edonote(msg_xy, settings)
@@ -148,14 +146,13 @@ def xedo(settings, outports):
                         if xy[0]<8 and xy[1]<8:
                             edonote = xy_to_edonote(xy, settings)
                             if msg_edonote == edonote:
-                                display_default(xy, lp, settings)
+                                display_default(xy, lpx, settings)
                 else:
                     for xy in pads.pads_xy:
                         if xy[0]<8 and xy[1]<8:
                             edonote = xy_to_edonote(xy, settings)
                             if msg_edonote == edonote:
-                                pad = pads.xy_to_pad_note(xy)
-                                lp.send(mido.Message('note_on', channel=0, note=pad, velocity=21))
+                                pads.display_vel(lpx, xy, 21)
 
             elif msg.type == "polytouch":
                 msg_xy = pads.pad_note_to_xy(msg.note)
@@ -165,8 +162,7 @@ def xedo(settings, outports):
             elif msg.type == "control_change":
                 if msg.value == 0:
                     if msg.control == exit_pad_note:
-                        for pad in pads.pads_midinote:
-                            lp.send(mido.Message('note_off', note=pad))
-                        lp.send(mido.Message('note_on', channel=0, note=exit_pad_note, velocity=0))
+                        pads.display_reset(lpx)
+                        pads.display_off(lpx, exit_pad_xy)
                         return "exit"
 
