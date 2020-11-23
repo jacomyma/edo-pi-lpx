@@ -27,7 +27,7 @@ def runState(state, firstTime):
                 print(config.get('edo'), "EDO")
                 
                 if firstTime:
-                    pads.display_text(lpx, "EDO-PI", False)
+                    pads.display_text(lpx, "EDOPI", False)
                 
                 # Note: the line below executes the X-EDO script
                 # ad libitum, and only returns a value on exit.
@@ -51,6 +51,13 @@ def runState(state, firstTime):
     except:
         print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))
+        
+        # Crash management:
+        for outport in midi_outputs:
+            outport.panic()
+        with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
+            pads.display_reset(lpx, False)
+            pads.display_text(lpx, "OOPS: "+str(sys.exc_info()[0]), True)
 
 # Test whether the Launchpad X is connected (iteratively, until it is)
 def testLPX(sc):
