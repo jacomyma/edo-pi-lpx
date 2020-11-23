@@ -147,7 +147,7 @@ Since it's the first time, it asks which editor to use. Pick the first one.
 
 #### 7.b. Add the following line at the end of the file:
 ```
-@reboot sleep 10 && python3 /home/pi/edo-pi-lpx/run.py
+@reboot sleep 12 && cd /home/pi/edo-pi-lpx && python3 run.py
 ```
 
 (if you have used another path, update the line above)
