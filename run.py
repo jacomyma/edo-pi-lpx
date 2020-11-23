@@ -75,7 +75,7 @@ def switchToProgrammerMode(lpx, flag):
             switch = mido.Message.from_hex('F0 00 20 29 02 0C 0E 00 F7')
         lpx.send(switch)
     except:
-        print("Oops!"
+        print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))
 
 def getAllOtherMidiOutputs():
