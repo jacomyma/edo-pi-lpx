@@ -11,13 +11,19 @@ import mido, lpxPads as pads, config;
 def display_default(xy, lpx):
     # Display root edonotes in pink
     edonote = xy_to_edonote(xy)
-    if edonote%config.get('edo') == 0:
+    [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
+    if key_12edo < 0 or key_12edo > 127:
+        pads.display_vel(lpx, xy, 121)
+    elif edonote%config.get('edo') == 0:
         pads.display_vel(lpx, xy, 94)
     else:
         pads.display_off(lpx, xy)
 
 def xy_to_edonote(xy):
-    bottomleft = -2*config.get('edo') # bottom-left note
+    if config.get('edo') * 127 / 12 > 64:
+        bottomleft = -2*config.get('edo') # bottom-left note
+    else:
+        bottomleft = -27 #_12edo_to_edonote(64)-32
     [x,y] = xy
     return bottomleft + x + config.get('row_offset') * y
 
@@ -29,7 +35,7 @@ def edonote_to_12edo(edonote):
     key_12edo = config.get('root_note') + key_offset
     pitch_correction = round(8191 * key_correction / config.get('pitch_bend_range_semitones'))
     return [key_12edo, pitch_correction]
-
+    
 # Note: channels 1 and 16 should not be used, as they are
 # considered master, which means their values, including pitch,
 # apply to all.
@@ -76,7 +82,10 @@ round_robin = {
 def play_edonote(msg, edonote, round_robin, outports):
     # Compute note and pitch for edonote
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
-    
+        
+    if key_12edo < 0 or key_12edo > 127:
+        return
+        
     # Manage round robin for channels
     endnote = msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0)
     newnote = msg.type == 'note_on' and not endnote
@@ -132,6 +141,9 @@ def play_edonote(msg, edonote, round_robin, outports):
 def send_aftertouch(msg, edonote, round_robin, outports):
     # Compute note and pitch for edonote
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
+    
+    if key_12edo < 0 or key_12edo > 127:
+        return
     
     # Manage round robin for channels
     endnote = msg.type == 'note_off' or (msg.type == 'note_on' and msg.velocity == 0)
