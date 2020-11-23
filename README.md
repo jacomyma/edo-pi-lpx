@@ -1,71 +1,106 @@
 # EDO + Raspberry Pi + Launchpad X
 
-This repository is basically a walkthrough. It makes my process reproducible.
+## Fresh Raspberry Pi install
+*(skip if you have one)*
 
-## Goal
-**Setup:**: I Have my Raspberry Pi 4 connected to both my Launchpad X and Continuumini.
-**Goal:**
-* I want the Launchpad X to send midi to the Continuumini
-* I want that to happen every time I plug them
+1.	Build a fresh image of the default Raspbian on the micro SD card.
+		If you want to control the Raspberry Pi at a distance, see below.
+		Else, you can just put the micro SD card in the Raspberry Pi, and boot it.
 
-## Principle
-Linux has its own MIDI management system called ALSA.
-You can get to know the MIDI devices and connect them with command lines.
+2.	These steps are relevant if you want to control the Raspberry headless, from another computer.
+		In short, we enable SSH and connect via command line to setup a VNC connection, from which we can see and control the desktop from another computer.
 
-See what is connected:
-```
-$ aconnect -i
-client 0: 'System' [type=kernel]
-    0 'Timer           '
-    1 'Announce        '
-client 14: 'Midi Through' [type=kernel]
-    0 'Midi Through Port-0'
-client 20: 'Launchpad X' [type=kernel,card=1]
-    0 'Launchpad X MIDI 1'
-    1 'Launchpad X MIDI 2'
-client 24: 'ContinuuMini SN000220' [type=kernel,card=2]
-    0 'ContinuuMini SN000220 MIDI 1'
-```
-This is the actual result on my setup. Each device has a number, for instance the Launchpad is 20.
-Each device can have multiple MIDI ports. The relevant midi port for the Launchpad is the second one (1).
-So that input is noted "20:1". Similarly the ContinuuMini is "24:0".
+	2.a.	Enable the Wifi by creating a valid wpa_supplicant.conf filr
+				-> check https://www.raspberrypi.org/documentation/configuration/wireless/headless.md
+	2.b.	Enable SSH by creating a file just named "SSH" in the boot folder
+				-> check https://www.tomshardware.com/reviews/raspberry-pi-headless-setup-how-to,6028.html
+	2.c.	Put the card into the Raspberry Pi, switch it on (i.e. plug it), and wait until it connects your wifi
+	2.d.	Find its IP, you will need it.
+				I found the easiest way to be the FING app on a smartphone.
+				-> check https://howchoo.com/pi/find-your-raspberry-pis-ip-address
+	2.e.	Get a SSH client it you don't have one already. On Windows, I use Putty.
+	2.f.	Connect to your raspberry via SSH. Enter the IP address and connect to it. The login is "pi" and the password "raspberry".
+	2.g.	Enter ```sudo raspi-config``` to enter the config interface.
+				Select "5 Interfacing options"
+				Select "P3 VNC"
+				Select "<YES>" and hit enter
+				Navigate to "<FINISH>" and hit enter
+				VNC is now enabled on the Raspberry.
+				-> check https://www.tomshardware.com/reviews/raspberry-pi-headless-setup-how-to,6028.html
+	2.h.	Download and install VNC on your computer. Create a new connection using the raspberry IP.
 
-The devices seem to always have the same numbers, but I don't see why it would be the case, so I would not count on it.
+				```sudo raspi-config```
+				7 Advanced options
+				A5 Resolution
+				DMT Mode 82 1920x1080 60Hz 16:9
+				<FINISH>
+				Would you like to reboot now? -> <YES>
+				...wait until it reboots and reconnects to the wifi...
+				Now it should work
 
-I can connect the devices just like that:
-```
-aconnect 20:1 24:0
-```
+3.	Since this is your first connection, the Raspberry needs a number of things (update etc.)
+		Just follow the steps. Nothing unusual, you don't have much to do. It's long, though.
+		Just a warning: if you change the password and then try to connect from VNC, think of updating the password in VNC too.
 
-Now, I would like to have that run every time I just connect the devices.
+## Install EDO-PI-LPX
 
-## Results that work
-TO DO
+4.	Clone this repository:
+		Open a terminal, and clone the respository from GitHub by using this line:
+		```git clone https://github.com/jacomyma/edo-pi-lpx.git```
+		(or whatever the URL of this repository is)
+		This will install the code in a repository located at ```/home/pi/edo-pi-lpx```
 
-## Experimentations
-### Idea
-Have a cron script reconnect the devices every 10 seconds.
+5.	Install dependencies
+		Install mido: ```pip3 install mido```
+		Install rt-midi: ```pip3 install python-rtmidi```
 
-### Execution
-I created a cron tab:
-```
-crontab -e
-```
-This opens the cron table in a text editor.
-There is a specific syntax to [Cron expressions](https://en.wikipedia.org/wiki/Cron#CRON_expression).
-Unfortunately, the best you can do is every minute.
-The expression is then just the following:
-```
-* * * * * aconnect 20:1 24:0
-```
-I added this line at the end of the cron tab.
+6.	Configure for your Launchpad X.
+		Basically, we just need to find the Launchpad X's proper identifier.
 
-### Result
+		6.a.	Plug the Launchpad X and wait until it switches on.
 
-**Pros:**
-* It should autoconnect the devices
+		6.b.	Open a python shell in a terminal, and get the ids of all midi things connected. It goes this way:
+					```
+					python3
+					>>> import mido
+					>>> mido_get_input_names()
+					[It inputs some list]
+					>>> exit()
+					```
 
-**Cons:**
-* Once it's connected, are there some side effects or retrying every 10 seconds?
-* If the numbers are not the same, it won't work.
-* Cron scripts only allow a command line every minute.
+					Look at the list. The Launchpad X should feature twice (because it has 2 distinct connection; only the second one is useful here). Copy the text of the second connection. For me it looks like this, but the numbers may change:
+					```Launchpad X:Launchpad X MIDI 2 28:1```
+
+		6.c.	Update the config. In the folder where you installed the script, presumably ```/home/pi/edo-pi-lpx```, there is a default config file named ```config_default.ini```. Open it in a text editor (right-click > Text editor).
+					At the top of the file there is a line with:
+					```launchpad_midi_id = Launchpad X:Launchpad X MIDI 2 28:1```
+					Replace the right part with the path that you have just obtained, if it differs.
+
+					**NOTE: if you have tried to run the script before, a new file named ```config.ini``` has been generated. In that case, update that file too.**
+
+					**NOTE: at this point you may just try the script for test purpose. Open a new terminal, browse to the repository with ```cd edo-pi-lpx/``` and type ```python3 run.py```. Exit with *CTRL+C*.**
+
+7.	Enable the code on boot:
+		In a nutshell, we add a line of code to execute the script on boot.
+		But since it's the first time we run ```crontab``` it's going to configure
+
+	7.a.	Open the cron tab by typing, in a terminal:
+				```crontab -e```
+				-> Since it's the first time, it asks which editor to use. Pick the first.
+
+	7.b.	Add the following line at the end of the file:
+				```@reboot sleep 10 && python3 /home/pi/edo-pi-lpx/run.py```
+				(if you have used another path, update the line above)
+
+	7.c.	Exit the editor, save when prompted to.
+				The script is now installed, you can shut the Raspberry Pi down.
+
+## How to use
+Starting with the Raspberry Pi unpowered:
+* Plug the Launchpad X. I recomment the USB 3.0 ports (blue)
+* Plug the other midi devices (e.g. ContinuuMini, Modal Skulpt...)
+* Power the Raspberry Pi
+* The Launchpad X will switch on, but keep waiting until its says "EDO-PI". You can then use it.
+
+## Usage
+TODO (UI)
