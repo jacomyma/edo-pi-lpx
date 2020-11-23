@@ -119,12 +119,13 @@ def checkMenuMessage(msg):
 
 # Display text
 def display_text(lpx, text, loop):
+    print("Display text", text)
     if loop:
         loop_hex = '01'
     else:
         loop_hex = '00'
 
-    speed = '10'
+    speed = '15'
 
     text_bin = text.encode(encoding='utf_8')
     text_hex = text_bin.hex()
