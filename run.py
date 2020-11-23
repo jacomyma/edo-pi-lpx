@@ -1,4 +1,4 @@
-import time, sched, mido, datetime
+import time, sched, mido, datetime, sys
 import xedo, lpxPads as pads, screens, config
 
 def log(msg):
@@ -46,7 +46,7 @@ def runState(state):
                 state = screens.setScreen(lpx, midi_outputs, state)
                 return runState(state)
     except:
-        print("Oops!", sys.exc_info()[0])
+        print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))
 
 # Test whether the Launchpad X is connected (iteratively, until it is)
@@ -60,7 +60,7 @@ def testLPX(sc):
             print("Waiting for Launchpad X...")
             s.enter(3, 1, testLPX, (sc,))
     except:
-        print("Oops!", sys.exc_info()[0])
+        print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))
 
 def switchToProgrammerMode(lpx, flag):
@@ -75,7 +75,7 @@ def switchToProgrammerMode(lpx, flag):
             switch = mido.Message.from_hex('F0 00 20 29 02 0C 0E 00 F7')
         lpx.send(switch)
     except:
-        print("Oops!", sys.exc_info()[0])
+        print("Oops!"
         log("ERROR: "+str(sys.exc_info()[0]))
 
 def getAllOtherMidiOutputs():
