@@ -4,15 +4,15 @@ from os import path
 
 def get(k):
     if k == 'edo':
-        return config['EDO']['edo']
+        return int(config['EDO']['edo'])
     elif k == 'root_note':
-        return config['EDO']['root_note']
+        return int(config['EDO']['root_note'])
     elif k == 'row_offset':
-        return config['EDO']['row_offset']
+        return int(config['EDO']['row_offset'])
     elif k == 'launchpad_midi_id':
         return config['MIDI']['launchpad_midi_id']
     elif k == 'pitch_bend_range_semitones':
-        return config['MPE']['pitch_bend_range_semitones']
+        return int(config['MPE']['pitch_bend_range_semitones'])
     elif k == 'send_channel_01':
         return config['MPE']['send_channel_01'] == "True"
     elif k == 'send_channel_02':

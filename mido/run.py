@@ -1,27 +1,5 @@
 import time, sched, mido, datetime
-import xedo, lpxPads as pads, screens
-
-# SETTINGS
-
-# To know what is the midi identifier of your Launchpad X,
-# plug it and use these lines:
-# import mido
-# mido.get_ioport_names()
-
-# Note: the Launchpad X appears twice.
-# Ignore the first instance, which is dedicated to the DAW.
-# Use the second MIDI interface.
-
-settings = {
-    'launchpad_midi_id': 'Launchpad X:Launchpad X MIDI 2 24:1',
-    'allowed_channels': [False, True, True, True, True, False, False, False, False, False, False, False, False, False, False, False],
-    'edo': 17,
-    'row_offset': 7,
-    'pitch_bend_range_semitones': 48,   # This must match the synth's settings
-                                        # Modal Skulpt: 48
-                                        # Continuumini: 96
-    'root_note': 60 # 60 is the middle C
-}
+import xedo, lpxPads as pads, screens, config
 
 def log(msg):
     print('#', msg)
@@ -44,17 +22,17 @@ def runState(state):
             
         # Then change the state    
         if state == 'edo':
-            with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
+            with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
                 switchToProgrammerMode(lpx, True)
-                print(settings['edo'], "EDO")
+                print(config.get('edo'), "EDO")
                 
                 # Note: the line below executes the X-EDO script
                 # ad libitum, and only returns a value on exit.
-                state = xedo.xedo(settings, lpx, midi_outputs)
+                state = xedo.xedo(lpx, midi_outputs)
                 return runState(state)
 
         elif state == 'exit':
-             with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
+             with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
                 switchToProgrammerMode(lpx, False)
                 
                 # Send any message from LPX to everyone else
@@ -63,9 +41,9 @@ def runState(state):
                         outport.send(msg)
                 #return
         else:
-            with mido.open_ioport(settings['launchpad_midi_id']) as lpx:
+            with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
                 switchToProgrammerMode(lpx, True)
-                state = screens.setScreen(settings, lpx, midi_outputs, state)
+                state = screens.setScreen(lpx, midi_outputs, state)
                 return runState(state)
     except:
         print("Oops!", sys.exc_info()[0])
@@ -75,7 +53,7 @@ def runState(state):
 def testLPX(sc):
     global lpx
     try:
-        if settings['launchpad_midi_id'] in mido.get_input_names():
+        if config.get('launchpad_midi_id') in mido.get_input_names():
             print("Launchpad X connected")
             runState("edo")
         else:
