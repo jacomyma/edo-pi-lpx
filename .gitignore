@@ -4,3 +4,4 @@ mido/conf.ini
 LPX-log.txt
 __pycache__
 conf.ini
+*.pyc
