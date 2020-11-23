@@ -11,7 +11,7 @@ log("#### RUN ####")
 
 s = sched.scheduler(time.time, time.sleep)
 
-def runState(state):
+def runState(state, firstTime):
     try:
         log("State: "+state)
         midi_outputs = getAllOtherMidiOutputs()
@@ -26,10 +26,13 @@ def runState(state):
                 switchToProgrammerMode(lpx, True)
                 print(config.get('edo'), "EDO")
                 
+                if firstTime:
+                    pads.display_text(lpx, "EDO-PI", False)
+                
                 # Note: the line below executes the X-EDO script
                 # ad libitum, and only returns a value on exit.
                 state = xedo.xedo(lpx, midi_outputs)
-                return runState(state)
+                return runState(state, False)
 
         elif state == 'exit':
              with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
@@ -44,7 +47,7 @@ def runState(state):
             with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
                 switchToProgrammerMode(lpx, True)
                 state = screens.setScreen(lpx, midi_outputs, state)
-                return runState(state)
+                return runState(state, False)
     except:
         print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))
@@ -55,7 +58,7 @@ def testLPX(sc):
     try:
         if config.get('launchpad_midi_id') in mido.get_input_names():
             print("Launchpad X connected")
-            runState("edo")
+            runState("edo", True)
         else:
             print("Waiting for Launchpad X...")
             s.enter(3, 1, testLPX, (sc,))
