@@ -9,7 +9,7 @@ def setScreen(lpx, outports, screen):
     elif screen == 'settings':
         submenu = 'settings-1'
 
-    initSubmenu(lpx)
+    initSubmenu(lpx, screen)
     
     # Listen to notes
     for msg in lpx:
@@ -23,27 +23,34 @@ def setScreen(lpx, outports, screen):
                 elif msg.control == pads.xy_to_pad_note([8, 7]):
                     if screen == 'notes' and submenu != 'edo':
                         submenu = 'edo'
-                        initSubmenu(lpx)
+                        initSubmenu(lpx, screen)
                         
                 # Submenu 2
                 elif msg.control == pads.xy_to_pad_note([8, 6]):
                     if screen == 'notes' and submenu != 'row':
                         submenu = 'row'
-                        initSubmenu(lpx)
+                        initSubmenu(lpx, screen)
                         
         elif msg.type == 'note_on' and msg.velocity > 2:
             xy = pads.pad_note_to_xy(msg.note)
-            edo = 1 + xy[0] + 8*(7-xy[1])
-            pads.display_text(lpx, str(edo), False)
-            config.set('edo', edo)
-            displayEdoPads(lpx)
+            if submenu == 'edo':
+                edo = 1 + xy[0] + 8*(7-xy[1])
+                pads.display_text(lpx, str(edo), False)
+                config.set('edo', edo)
+                displayEdoPads(lpx)
+            elif submenu == 'row':
+                if xy[1] == 7:
+                    row_offset = xy[0]+1
+                    pads.display_text(lpx, str(row_offset), False)
+                    config.set('row_offset', row_offset)
+                    displayRowPads(lpx)
             
 
-def initSubmenu(lpx):
+def initSubmenu(lpx, screen):
     # Reset
     pads.display_reset(lpx, False)
 
-    # Display menu glow + set submenu
+    # Display menu glow
     if screen == 'notes':
         pads.display_menu_glow(lpx, pads.menu['notes']['xy'])
     elif screen == 'settings':
@@ -56,6 +63,7 @@ def initSubmenu(lpx):
     elif submenu == 'row':
         pads.display_text(lpx, 'ROW', False)
         displayEdoSubmenu(lpx)
+        displayRowPads(lpx)
 
 def displayEdoSubmenu(lpx):
     rgb_low  = [0.05, 0.15, 0.05]
@@ -135,5 +143,19 @@ def displayEdoPads(lpx):
         [[5,0], rgb_high if config.get('edo')==62 else rgb_low],   # EDO 62
         [[6,0], rgb_high if config.get('edo')==63 else rgb_low],   # EDO 63
         [[7,0], rgb_high if config.get('edo')==64 else rgb_low],   # EDO 64
+    ])
+    
+def displayRowPads(lpx):
+    rgb_low  = [0.2, 0.2, 0.2]
+    rgb_high = [1.0, 1.0, 1.0]
+    pads.display_multi(lpx, [
+        [[0,7], rgb_high if config.get('row_offset')==1  else rgb_low],   # Row Offset 01
+        [[1,7], rgb_high if config.get('row_offset')==2  else rgb_low],   # Row Offset 02
+        [[2,7], rgb_high if config.get('row_offset')==3  else rgb_low],   # Row Offset 03
+        [[3,7], rgb_high if config.get('row_offset')==4  else rgb_low],   # Row Offset 04
+        [[4,7], rgb_high if config.get('row_offset')==5  else rgb_low],   # Row Offset 05
+        [[5,7], rgb_high if config.get('row_offset')==6  else rgb_low],   # Row Offset 06
+        [[6,7], rgb_high if config.get('row_offset')==7  else rgb_low],   # Row Offset 07
+        [[7,7], rgb_high if config.get('row_offset')==8  else rgb_low],   # Row Offset 08
     ])
         
