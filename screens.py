@@ -7,7 +7,7 @@ def setScreen(lpx, outports, screen):
     if screen == 'notes':
         submenu = 'edo'
     elif screen == 'settings':
-        submenu = 'settings-1'
+        submenu = 'settings' # No submenus for the moment
 
     initSubmenu(lpx, screen)
     
@@ -44,6 +44,27 @@ def setScreen(lpx, outports, screen):
                     pads.display_text(lpx, str(row_offset), False)
                     config.set('row_offset', row_offset)
                     displayRowPads(lpx)
+            elif submenu == 'settings':
+                if (xy[1] == 7 and xy[0]>0) or (xy[1] == 6 and xy[0]<7):
+                    channel = str(1 + xy[0] + 8*(7-xy[1]))
+                    if len(channel) == 1:
+                        channel = "0" + channel
+                    chanData = config.get('send_channel_'+channel)
+                    pads.display_text(lpx, 'Ch.' + channel + (' OFF' if chanData else ' ON'), False)
+                    config.set('send_channel_'+channel, chanData==False)
+                    displaySettingsPads(lpx)
+                elif xy[1] == 4 and xy[0]<4:
+                    if xy[0] == 0:
+                        pitchRange = 12
+                    elif xy[0] == 1:
+                        pitchRange = 24
+                    elif xy[0] ==3:
+                        pitchRange = 96
+                    else:
+                        pitchRange = 48
+                    pads.display_text(lpx, str(pitchRange)+" Pitch Range", False)
+                    config.set('pitch_bend_range_semitones', pitchRange)
+                    displaySettingsPads(lpx)
             
 
 def initSubmenu(lpx, screen):
@@ -64,6 +85,9 @@ def initSubmenu(lpx, screen):
         pads.display_text(lpx, 'ROW', False)
         displayEdoSubmenu(lpx)
         displayRowPads(lpx)
+    elif submenu == 'settings':
+        pads.display_text(lpx, 'MPE', False)
+        displaySettingsPads(lpx)
 
 def displayEdoSubmenu(lpx):
     rgb_low  = [0.05, 0.15, 0.05]
@@ -144,7 +168,7 @@ def displayEdoPads(lpx):
         [[6,0], rgb_high if config.get('edo')==63 else rgb_low],   # EDO 63
         [[7,0], rgb_high if config.get('edo')==64 else rgb_low],   # EDO 64
     ])
-    
+
 def displayRowPads(lpx):
     rgb_low  = [0.2, 0.2, 0.2]
     rgb_high = [1.0, 1.0, 1.0]
@@ -158,4 +182,33 @@ def displayRowPads(lpx):
         [[6,7], rgb_high if config.get('row_offset')==7  else rgb_low],   # Row Offset 07
         [[7,7], rgb_high if config.get('row_offset')==8  else rgb_low],   # Row Offset 08
     ])
-        
+
+def displaySettingsPads(lpx):
+    rgb_low  = [0.2, 0.2, 0.2]
+    rgb_high = [1.0, 1.0, 1.0]
+    rgb_red  = [0.2, 0.0, 0.0]
+    rgb_48   = [0.2, 0.1, 0.3]
+    rgb_48h  = [0.8, 0.2, 1.0]
+    pads.display_multi(lpx, [
+        [[0,7], rgb_red],                                                   # Send to channel 01
+        [[1,7], rgb_high if config.get('send_channel_02')  else rgb_low],   # Send to channel 02
+        [[2,7], rgb_high if config.get('send_channel_03')  else rgb_low],   # Send to channel 03
+        [[3,7], rgb_high if config.get('send_channel_04')  else rgb_low],   # Send to channel 04
+        [[4,7], rgb_high if config.get('send_channel_05')  else rgb_low],   # Send to channel 05
+        [[5,7], rgb_high if config.get('send_channel_06')  else rgb_low],   # Send to channel 06
+        [[6,7], rgb_high if config.get('send_channel_07')  else rgb_low],   # Send to channel 07
+        [[7,7], rgb_high if config.get('send_channel_08')  else rgb_low],   # Send to channel 08
+        [[0,6], rgb_high if config.get('send_channel_09')  else rgb_low],   # Send to channel 09
+        [[1,6], rgb_high if config.get('send_channel_10')  else rgb_low],   # Send to channel 10
+        [[2,6], rgb_high if config.get('send_channel_11')  else rgb_low],   # Send to channel 11
+        [[3,6], rgb_high if config.get('send_channel_12')  else rgb_low],   # Send to channel 12
+        [[4,6], rgb_high if config.get('send_channel_13')  else rgb_low],   # Send to channel 13
+        [[5,6], rgb_high if config.get('send_channel_14')  else rgb_low],   # Send to channel 14
+        [[6,6], rgb_high if config.get('send_channel_15')  else rgb_low],   # Send to channel 15
+        [[7,6], rgb_red],                                                   # Send to channel 16
+
+        [[0,4], rgb_high if config.get('pitch_bend_range_semitones') == 12  else rgb_low],   # Pitch range 12
+        [[1,4], rgb_high if config.get('pitch_bend_range_semitones') == 24  else rgb_low],   # Pitch range 24
+        [[2,4], rgb_48h  if config.get('pitch_bend_range_semitones') == 48  else rgb_48 ],   # Pitch range 48
+        [[3,4], rgb_high if config.get('pitch_bend_range_semitones') == 96  else rgb_low],   # Pitch range 96
+    ])

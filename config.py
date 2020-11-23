@@ -63,58 +63,52 @@ def set(k,v):
         config['MPE']['pitch_bend_range_semitones'] = str(v)
         writeConfig()
     elif k == 'send_channel_01' and (v==True or v==False):
-        config['MPE']['send_channel_01'] == "True" if v else "False"
-        writeConfig()
-    elif k == 'send_channel_01' and (v==True or v==False):
-        config['MPE']['send_channel_01'] == "True" if v else "False"
-        writeConfig()
-    elif k == 'send_channel_01' and (v==True or v==False):
-        config['MPE']['send_channel_01'] == "True" if v else "False"
+        config['MPE']['send_channel_01'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_02' and (v==True or v==False):
-        config['MPE']['send_channel_02'] == "True" if v else "False"
+        config['MPE']['send_channel_02'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_03' and (v==True or v==False):
-        config['MPE']['send_channel_03'] == "True" if v else "False"
+        config['MPE']['send_channel_03'] ="True" if v else "False"
         writeConfig()
     elif k == 'send_channel_04' and (v==True or v==False):
-        config['MPE']['send_channel_04'] == "True" if v else "False"
+        config['MPE']['send_channel_04'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_05' and (v==True or v==False):
-        config['MPE']['send_channel_05'] == "True" if v else "False"
+        config['MPE']['send_channel_05'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_06' and (v==True or v==False):
-        config['MPE']['send_channel_06'] == "True" if v else "False"
+        config['MPE']['send_channel_06'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_07' and (v==True or v==False):
-        config['MPE']['send_channel_07'] == "True" if v else "False"
+        config['MPE']['send_channel_07'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_08' and (v==True or v==False):
-        config['MPE']['send_channel_08'] == "True" if v else "False"
+        config['MPE']['send_channel_08'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_09' and (v==True or v==False):
-        config['MPE']['send_channel_09'] == "True" if v else "False"
+        config['MPE']['send_channel_09'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_10' and (v==True or v==False):
-        config['MPE']['send_channel_10'] == "True" if v else "False"
+        config['MPE']['send_channel_10'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_11' and (v==True or v==False):
-        config['MPE']['send_channel_11'] == "True" if v else "False"
+        config['MPE']['send_channel_11'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_12' and (v==True or v==False):
-        config['MPE']['send_channel_12'] == "True" if v else "False"
+        config['MPE']['send_channel_12'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_13' and (v==True or v==False):
-        config['MPE']['send_channel_13'] == "True" if v else "False"
+        config['MPE']['send_channel_13'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_14' and (v==True or v==False):
-        config['MPE']['send_channel_14'] == "True" if v else "False"
+        config['MPE']['send_channel_14'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_15' and (v==True or v==False):
-        config['MPE']['send_channel_15'] == "True" if v else "False"
+        config['MPE']['send_channel_15'] = "True" if v else "False"
         writeConfig()
     elif k == 'send_channel_16' and (v==True or v==False):
-        config['MPE']['send_channel_16'] == "True" if v else "False"
+        config['MPE']['send_channel_16'] = "True" if v else "False"
         writeConfig()
         
 
