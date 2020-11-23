@@ -1,4 +1,4 @@
-# Autoconnect Midi
+# EDO + Raspberry Pi + Launchpad X
 
 This repository is basically a walkthrough. It makes my process reproducible.
 
