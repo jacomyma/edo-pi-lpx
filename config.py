@@ -45,6 +45,38 @@ def get(k):
         return config['MPE']['send_channel_15'] == "True"
     elif k == 'send_channel_16':
         return config['MPE']['send_channel_16'] == "True"
+    elif k == '3/2':
+        return config['RATIOS']['3/2']
+    elif k == '4/3':
+        return config['RATIOS']['4/3']
+    elif k == '5/3':
+        return config['RATIOS']['5/3']
+    elif k == '5/4':
+        return config['RATIOS']['5/4']
+    elif k == '6/5':
+        return config['RATIOS']['6/5']
+    elif k == '7/4':
+        return config['RATIOS']['7/4']
+    elif k == '7/5':
+        return config['RATIOS']['7/5']
+    elif k == '7/6':
+        return config['RATIOS']['7/6']
+    elif k == '8/5':
+        return config['RATIOS']['8/5']
+    elif k == '8/7':
+        return config['RATIOS']['8/7']
+    elif k == '9/5':
+        return config['RATIOS']['9/5']
+    elif k == '9/7':
+        return config['RATIOS']['9/7']
+    elif k == '9/8':
+        return config['RATIOS']['9/8']
+    elif k == '10/7':
+        return config['RATIOS']['10/7']
+    elif k == '10/9':
+        return config['RATIOS']['10/9']
+    elif k == '12/7':
+        return config['RATIOS']['12/7']
 
 def set(k,v):
     if k == 'edo' and isinstance(v, int):
@@ -109,6 +141,54 @@ def set(k,v):
         writeConfig()
     elif k == 'send_channel_16' and (v==True or v==False):
         config['MPE']['send_channel_16'] = "True" if v else "False"
+        writeConfig()
+    elif k == '3/2':
+        config['RATIOS']['3/2'] = v
+        writeConfig()
+    elif k == '4/3':
+        config['RATIOS']['4/3'] = v
+        writeConfig()
+    elif k == '5/3':
+        config['RATIOS']['5/3'] = v
+        writeConfig()
+    elif k == '5/4':
+        config['RATIOS']['5/4'] = v
+        writeConfig()
+    elif k == '6/5':
+        config['RATIOS']['6/5'] = v
+        writeConfig()
+    elif k == '7/4':
+        config['RATIOS']['7/4'] = v
+        writeConfig()
+    elif k == '7/5':
+        config['RATIOS']['7/5'] = v
+        writeConfig()
+    elif k == '7/6':
+        config['RATIOS']['7/6'] = v
+        writeConfig()
+    elif k == '8/5':
+        config['RATIOS']['8/5'] = v
+        writeConfig()
+    elif k == '8/7':
+        config['RATIOS']['8/7'] = v
+        writeConfig()
+    elif k == '9/5':
+        config['RATIOS']['9/5'] = v
+        writeConfig()
+    elif k == '9/7':
+        config['RATIOS']['9/7'] = v
+        writeConfig()
+    elif k == '9/8':
+        config['RATIOS']['9/8'] = v
+        writeConfig()
+    elif k == '10/7':
+        config['RATIOS']['10/7'] = v
+        writeConfig()
+    elif k == '10/9':
+        config['RATIOS']['10/9'] = v
+        writeConfig()
+    elif k == '12/7':
+        config['RATIOS']['12/7'] = v
         writeConfig()
         
 

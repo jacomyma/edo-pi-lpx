@@ -1,5 +1,41 @@
 import mido, lpxPads as pads, config;
 
+def getRatioName(ratio):
+    if ratio == "2/1":
+        return "Octave"
+    elif ratio == "3/2":
+        return "Perfect Fifth"
+    elif ratio == "4/3":
+        return "Perfect Fourth"
+    elif ratio == "5/3":
+        return "Major Sixth"
+    elif ratio == "5/4":
+        return "Classic Major Third"
+    elif ratio == "6/5":
+        return "Classic Minor Third"
+    elif ratio == "7/4":
+        return "Harmonic Seventh"
+    elif ratio == "7/5":
+        return "Narrow Tritone"
+    elif ratio == "7/6":
+        return "Septimal Minor Third"
+    elif ratio == "8/5":
+        return "Classic Minor Sixth"
+    elif ratio == "8/7":
+        return "Septimal Major Second"
+    elif ratio == "9/5":
+        return "Just Minor Seventh"
+    elif ratio == "9/7":
+        return "Septimal Major Third"
+    elif ratio == "9/8":
+        return "Whole Tone"
+    elif ratio == "10/7":
+        return "High Tritone"
+    elif ratio == "10/9":
+        return "Small Whole Tone"
+    elif ratio == "12/7":
+        return "Septimal Major Sixth"
+        
 def setScreen(lpx, outports, screen):
     global submenu
 
@@ -31,6 +67,12 @@ def setScreen(lpx, outports, screen):
                         submenu = 'row'
                         initSubmenu(lpx, screen)
                         
+                # Submenu 3
+                elif msg.control == pads.xy_to_pad_note([8, 5]):
+                    if screen == 'notes' and submenu != 'color':
+                        submenu = 'color'
+                        initSubmenu(lpx, screen)
+                        
         elif msg.type == 'note_on' and msg.velocity > 2:
             xy = pads.pad_note_to_xy(msg.note)
             if submenu == 'edo':
@@ -44,6 +86,53 @@ def setScreen(lpx, outports, screen):
                     pads.display_text(lpx, str(row_offset), False)
                     config.set('row_offset', row_offset)
                     displayRowPads(lpx)
+            elif submenu == 'color':
+                if xy[0] <4:
+                    if xy[1] == 7:
+                        ratio = "7/6"
+                    elif xy[1] == 6:
+                        ratio = "5/4"
+                    elif xy[1] == 5:
+                        ratio = "7/5"
+                    elif xy[1] == 4:
+                        ratio = "3/2"
+                    elif xy[1] == 3:
+                        ratio = "5/3"
+                    elif xy[1] == 2:
+                        ratio = "7/4"
+                    elif xy[1] == 1:
+                        ratio = "9/5"
+                    elif xy[1] == 0:
+                        ratio = "9/7"
+                else:
+                    if xy[1] == 7:
+                        ratio = "12/7"
+                    elif xy[1] == 6:
+                        ratio = "8/5"
+                    elif xy[1] == 5:
+                        ratio = "10/7"
+                    elif xy[1] == 4:
+                        ratio = "4/3"
+                    elif xy[1] == 3:
+                        ratio = "6/5"
+                    elif xy[1] == 2:
+                        ratio = "8/7"
+                    elif xy[1] == 1:
+                        ratio = "10/9"
+                    elif xy[1] == 0:
+                        ratio = "9/8"
+                if xy[0] != 3 and xy[0] != 7:
+                    val = "Off"
+                    if xy[0] == 1 or xy[0] == 5:
+                        val = "White"
+                    if xy[0] == 2 or xy[0] == 6:
+                        val = "Color"
+                    pads.display_text(lpx, ratio+" "+val, False)
+                    config.set(ratio, val)
+                    displayColorPads(lpx)
+                else:
+                    pads.display_text(lpx, ratio+" "+getRatioName(ratio), False)
+            
             elif submenu == 'settings':
                 if (xy[1] == 7 and xy[0]>0) or (xy[1] == 6 and xy[0]<7):
                     channel = str(1 + xy[0] + 8*(7-xy[1]))
@@ -85,6 +174,10 @@ def initSubmenu(lpx, screen):
         pads.display_text(lpx, 'ROW', False)
         displayEdoSubmenu(lpx)
         displayRowPads(lpx)
+    elif submenu == 'color':
+        pads.display_text(lpx, 'COLOR', False)
+        displayEdoSubmenu(lpx)
+        displayColorPads(lpx)
     elif submenu == 'settings':
         pads.display_text(lpx, 'MPE', False)
         displaySettingsPads(lpx)
@@ -93,8 +186,9 @@ def displayEdoSubmenu(lpx):
     rgb_low  = [0.05, 0.15, 0.05]
     rgb_high = [0.60, 1.00, 0.60]
     pads.display_multi(lpx, [
-        [[8,7], rgb_high if submenu == 'edo' else rgb_low],   # Submenu edo
-        [[8,6], rgb_high if submenu == 'row' else rgb_low],   # Submenu row
+        [[8,7], rgb_high if submenu == 'edo'   else rgb_low],   # Submenu edo
+        [[8,6], rgb_high if submenu == 'row'   else rgb_low],   # Submenu row
+        [[8,5], rgb_high if submenu == 'color' else rgb_low],   # Submenu color
     ])
 
 def displayEdoPads(lpx):
@@ -181,6 +275,100 @@ def displayRowPads(lpx):
         [[5,7], rgb_high if config.get('row_offset')==6  else rgb_low],   # Row Offset 06
         [[6,7], rgb_high if config.get('row_offset')==7  else rgb_low],   # Row Offset 07
         [[7,7], rgb_high if config.get('row_offset')==8  else rgb_low],   # Row Offset 08
+    ])
+
+def getRatioRGB(ratio, hl):
+    f = 1 if hl else 0.15
+    if ratio == "2/1":
+        return [f*227/255, f*143/255, f*217/255]
+    elif ratio == "3/2":
+        return [f*  0/255, f*195/255, f*170/255]
+    elif ratio == "4/3":
+        return [f*153/255, f*182/255, f* 89/255]
+    elif ratio == "5/3":
+        return [f*  0/255, f*188/255, f*238/255]
+    elif ratio == "5/4":
+        return [f*204/255, f*166/255, f* 78/255]
+    elif ratio == "6/5":
+        return [f*230/255, f*154/255, f* 90/255]
+    elif ratio == "7/4":
+        return [f* 39/255, f*180/255, f*255/255]
+    elif ratio == "7/5":
+        return [f*107/255, f*187/255, f*116/255]
+    elif ratio == "7/6":
+        return [f*240/255, f*146/255, f*103/255]
+    elif ratio == "8/5":
+        return [f*  0/255, f*193/255, f*222/255]
+    elif ratio == "8/7":
+        return [f*250/255, f*141/255, f*117/255]
+    elif ratio == "9/5":
+        return [f*110/255, f*171/255, f*255/255]
+    elif ratio == "9/7":
+        return [f*184/255, f*173/255, f* 78/255]
+    elif ratio == "9/8":
+        return [f*254/255, f*138/255, f*127/255]
+    elif ratio == "10/7":
+        return [f* 82/255, f*191/255, f*131/255]
+    elif ratio == "10/9":
+        return [f*255/255, f*136/255, f*137/255]
+    elif ratio == "12/7":
+        return [f*  0/255, f*184/255, f*254/255]
+
+def displayColorPads(lpx):
+    rgb_off_low  =   [0.05, 0.00, 0.00]
+    rgb_off_high =   [0.80, 0.00, 0.00]
+    rgb_white_low  = [0.08, 0.08, 0.08]
+    rgb_white_high = [0.90, 0.90, 0.90]
+    pads.display_multi(lpx, [
+        [[0,7], rgb_off_high              if config.get('7/6') == "Off"   else rgb_off_low               ],   # Ratio 7/6 Off
+        [[1,7], rgb_white_high            if config.get('7/6') == "White" else rgb_white_low             ],   # Ratio 7/6 White
+        [[2,7], getRatioRGB('7/6', True)  if config.get('7/6') == "Color" else getRatioRGB('7/6', False) ],   # Ratio 7/6 Color
+        [[0,6], rgb_off_high              if config.get('5/4') == "Off"   else rgb_off_low               ],   # Ratio 5/4 Off
+        [[1,6], rgb_white_high            if config.get('5/4') == "White" else rgb_white_low             ],   # Ratio 5/4 White
+        [[2,6], getRatioRGB('5/4', True)  if config.get('5/4') == "Color" else getRatioRGB('5/4', False) ],   # Ratio 5/4 Color
+        [[0,5], rgb_off_high              if config.get('7/5') == "Off"   else rgb_off_low               ],   # Ratio 7/5 Off
+        [[1,5], rgb_white_high            if config.get('7/5') == "White" else rgb_white_low             ],   # Ratio 7/5 White
+        [[2,5], getRatioRGB('7/5', True)  if config.get('7/5') == "Color" else getRatioRGB('7/5', False) ],   # Ratio 7/5 Color
+        [[0,4], rgb_off_high              if config.get('3/2') == "Off"   else rgb_off_low               ],   # Ratio 3/2 Off
+        [[1,4], rgb_white_high            if config.get('3/2') == "White" else rgb_white_low             ],   # Ratio 3/2 White
+        [[2,4], getRatioRGB('3/2', True)  if config.get('3/2') == "Color" else getRatioRGB('3/2', False) ],   # Ratio 3/2 Color
+        [[0,3], rgb_off_high              if config.get('5/3') == "Off"   else rgb_off_low               ],   # Ratio 5/3 Off
+        [[1,3], rgb_white_high            if config.get('5/3') == "White" else rgb_white_low             ],   # Ratio 5/3 White
+        [[2,3], getRatioRGB('5/3', True)  if config.get('5/3') == "Color" else getRatioRGB('5/3', False) ],   # Ratio 5/3 Color
+        [[0,2], rgb_off_high              if config.get('7/4') == "Off"   else rgb_off_low               ],   # Ratio 7/4 Off
+        [[1,2], rgb_white_high            if config.get('7/4') == "White" else rgb_white_low             ],   # Ratio 7/4 White
+        [[2,2], getRatioRGB('7/4', True)  if config.get('7/4') == "Color" else getRatioRGB('7/4', False) ],   # Ratio 7/4 Color
+        [[0,1], rgb_off_high              if config.get('9/5') == "Off"   else rgb_off_low               ],   # Ratio 9/5 Off
+        [[1,1], rgb_white_high            if config.get('9/5') == "White" else rgb_white_low             ],   # Ratio 9/5 White
+        [[2,1], getRatioRGB('9/5', True)  if config.get('9/5') == "Color" else getRatioRGB('9/5', False) ],   # Ratio 9/5 Color
+        [[0,0], rgb_off_high              if config.get('9/7') == "Off"   else rgb_off_low               ],   # Ratio 9/7 Off
+        [[1,0], rgb_white_high            if config.get('9/7') == "White" else rgb_white_low             ],   # Ratio 9/7 White
+        [[2,0], getRatioRGB('9/7', True)  if config.get('9/7') == "Color" else getRatioRGB('9/7', False) ],   # Ratio 9/7 Color
+
+        [[4,7], rgb_off_high              if config.get('12/7') == "Off"   else rgb_off_low               ],   # Ratio 12/7 Off
+        [[5,7], rgb_white_high            if config.get('12/7') == "White" else rgb_white_low             ],   # Ratio 12/7 White
+        [[6,7], getRatioRGB('12/7', True) if config.get('12/7') == "Color" else getRatioRGB('12/7', False)],   # Ratio 12/7 Color
+        [[4,6], rgb_off_high              if config.get('8/5')  == "Off"   else rgb_off_low               ],   # Ratio 8/5 Off
+        [[5,6], rgb_white_high            if config.get('8/5')  == "White" else rgb_white_low             ],   # Ratio 8/5 White
+        [[6,6], getRatioRGB('8/5', True)  if config.get('8/5')  == "Color" else getRatioRGB('8/5', False) ],   # Ratio 8/5 Color
+        [[4,5], rgb_off_high              if config.get('10/7') == "Off"   else rgb_off_low               ],   # Ratio 10/7 Off
+        [[5,5], rgb_white_high            if config.get('10/7') == "White" else rgb_white_low             ],   # Ratio 10/7 White
+        [[6,5], getRatioRGB('10/7', True) if config.get('10/7') == "Color" else getRatioRGB('10/7', False)],   # Ratio 10/7 Color
+        [[4,4], rgb_off_high              if config.get('4/3')  == "Off"   else rgb_off_low               ],   # Ratio 4/3 Off
+        [[5,4], rgb_white_high            if config.get('4/3')  == "White" else rgb_white_low             ],   # Ratio 4/3 White
+        [[6,4], getRatioRGB('4/3', True)  if config.get('4/3')  == "Color" else getRatioRGB('4/3', False) ],   # Ratio 4/3 Color
+        [[4,3], rgb_off_high              if config.get('6/5')  == "Off"   else rgb_off_low               ],   # Ratio 6/5 Off
+        [[5,3], rgb_white_high            if config.get('6/5')  == "White" else rgb_white_low             ],   # Ratio 6/5 White
+        [[6,3], getRatioRGB('6/5', True)  if config.get('6/5')  == "Color" else getRatioRGB('6/5', False) ],   # Ratio 6/5 Color
+        [[4,2], rgb_off_high              if config.get('8/7')  == "Off"   else rgb_off_low               ],   # Ratio 8/7 Off
+        [[5,2], rgb_white_high            if config.get('8/7')  == "White" else rgb_white_low             ],   # Ratio 8/7 White
+        [[6,2], getRatioRGB('8/7', True)  if config.get('8/7')  == "Color" else getRatioRGB('8/7', False) ],   # Ratio 8/7 Color
+        [[4,1], rgb_off_high              if config.get('10/9') == "Off"   else rgb_off_low               ],   # Ratio 10/9 Off
+        [[5,1], rgb_white_high            if config.get('10/9') == "White" else rgb_white_low             ],   # Ratio 10/9 White
+        [[6,1], getRatioRGB('10/9', True) if config.get('10/9') == "Color" else getRatioRGB('10/9', False)],   # Ratio 10/9 Color
+        [[4,0], rgb_off_high              if config.get('9/8')  == "Off"   else rgb_off_low               ],   # Ratio 9/8 Off
+        [[5,0], rgb_white_high            if config.get('9/8')  == "White" else rgb_white_low             ],   # Ratio 9/8 White
+        [[6,0], getRatioRGB('9/8', True)  if config.get('9/8')  == "Color" else getRatioRGB('9/8', False) ],   # Ratio 9/8 Color
     ])
 
 def displaySettingsPads(lpx):
