@@ -1,4 +1,4 @@
-import mido, lpxPads as pads, config;
+import mido, lpxPads as pads, config, math;
 
 # Note: I use the term "edonote" to refer to edo-specific note notation.
 # Edo means "Equal division of octave".
@@ -8,14 +8,67 @@ import mido, lpxPads as pads, config;
 # In an edo of X, the edonote X equals to one octave above the root pitch.
 # The edonote -X equals to one octave below the root pitch.
 
+def displayRatio(lpx, xy, ratio, fit):
+    c = config.get(ratio)
+    if c=="White":
+        pads.display(lpx, xy, [fit,fit,fit])
+        return True
+    elif c=="Color":
+        pads.display(lpx, xy, pads.getRatioRGB(ratio, fit))
+        return True
+    else:
+        return False
+
+def testRatio(lpx, xy, noteRatio, noteRange, ratioStr, ratio):
+    error = abs(noteRatio - math.log(ratio, 2)) / noteRange
+    if error < 1:
+        return displayRatio(lpx, xy, ratioStr, 1-error)
+    else:
+        return False
+
 def display_default(xy, lpx):
     # Display root edonotes in pink
+    edo = config.get('edo')
     edonote = xy_to_edonote(xy)
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
+    noteRatio = (edonote%edo) / edo
+    noteRange = 0.5 / edo
     if key_12edo < 0 or key_12edo > 127:
         pads.display_vel(lpx, xy, 121)
     elif edonote%config.get('edo') == 0:
         pads.display_vel(lpx, xy, 94)
+    elif testRatio(lpx, xy, noteRatio, noteRange, "3/2", 3/2):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "4/3", 4/3):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "5/3", 5/3):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "5/4", 5/4):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "6/5", 6/5):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "7/4", 7/4):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "7/5", 7/5):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "7/6", 7/6):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "8/5", 8/5):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "8/7", 8/7):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "9/5", 9/5):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "9/7", 9/7):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "9/8", 9/8):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "10/7", 10/7):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "10/9", 10/9):
+        pass
+    elif testRatio(lpx, xy, noteRatio, noteRange, "12/7", 12/7):
+        pass
     else:
         pads.display_off(lpx, xy)
 

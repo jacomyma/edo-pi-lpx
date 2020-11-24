@@ -278,41 +278,8 @@ def displayRowPads(lpx):
     ])
 
 def getRatioRGB(ratio, hl):
-    f = 1 if hl else 0.15
-    if ratio == "2/1":
-        return [f*227/255, f*143/255, f*217/255]
-    elif ratio == "3/2":
-        return [f*  0/255, f*195/255, f*170/255]
-    elif ratio == "4/3":
-        return [f*153/255, f*182/255, f* 89/255]
-    elif ratio == "5/3":
-        return [f*  0/255, f*188/255, f*238/255]
-    elif ratio == "5/4":
-        return [f*204/255, f*166/255, f* 78/255]
-    elif ratio == "6/5":
-        return [f*230/255, f*154/255, f* 90/255]
-    elif ratio == "7/4":
-        return [f* 39/255, f*180/255, f*255/255]
-    elif ratio == "7/5":
-        return [f*107/255, f*187/255, f*116/255]
-    elif ratio == "7/6":
-        return [f*240/255, f*146/255, f*103/255]
-    elif ratio == "8/5":
-        return [f*  0/255, f*193/255, f*222/255]
-    elif ratio == "8/7":
-        return [f*250/255, f*141/255, f*117/255]
-    elif ratio == "9/5":
-        return [f*110/255, f*171/255, f*255/255]
-    elif ratio == "9/7":
-        return [f*184/255, f*173/255, f* 78/255]
-    elif ratio == "9/8":
-        return [f*254/255, f*138/255, f*127/255]
-    elif ratio == "10/7":
-        return [f* 82/255, f*191/255, f*131/255]
-    elif ratio == "10/9":
-        return [f*255/255, f*136/255, f*137/255]
-    elif ratio == "12/7":
-        return [f*  0/255, f*184/255, f*254/255]
+    factor = 1 if hl else 0.15
+    return pads.getRatioRGB(ratio, factor)
 
 def displayColorPads(lpx):
     rgb_off_low  =   [0.05, 0.00, 0.00]
