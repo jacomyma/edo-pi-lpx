@@ -51,27 +51,30 @@ def setScreen(lpx, outports, screen):
     for msg in lpx:
         if msg.type == "control_change":
             if msg.value == 0:
-                # Menu back
-                if msg.control == pads.menu[screen]['note']:
-                    return 'edo'
-                
-                # Submenu 1
-                elif msg.control == pads.xy_to_pad_note([8, 7]):
-                    if screen == 'notes' and submenu != 'edo':
-                        submenu = 'edo'
-                        initSubmenu(lpx, screen)
-                        
-                # Submenu 2
-                elif msg.control == pads.xy_to_pad_note([8, 6]):
-                    if screen == 'notes' and submenu != 'row':
-                        submenu = 'row'
-                        initSubmenu(lpx, screen)
-                        
-                # Submenu 3
-                elif msg.control == pads.xy_to_pad_note([8, 5]):
-                    if screen == 'notes' and submenu != 'color':
-                        submenu = 'color'
-                        initSubmenu(lpx, screen)
+                check = pads.checkMenuMessage(msg)
+                if check != False:
+                    if check == screen:
+                        return "edo"
+                    else:
+                        return check
+                else:
+                    # Submenu 1
+                    if msg.control == pads.xy_to_pad_note([8, 7]):
+                        if screen == 'notes' and submenu != 'edo':
+                            submenu = 'edo'
+                            initSubmenu(lpx, screen)
+                            
+                    # Submenu 2
+                    elif msg.control == pads.xy_to_pad_note([8, 6]):
+                        if screen == 'notes' and submenu != 'row':
+                            submenu = 'row'
+                            initSubmenu(lpx, screen)
+                            
+                    # Submenu 3
+                    elif msg.control == pads.xy_to_pad_note([8, 5]):
+                        if screen == 'notes' and submenu != 'color':
+                            submenu = 'color'
+                            initSubmenu(lpx, screen)
                         
         elif msg.type == 'note_on' and msg.velocity > 2:
             xy = pads.pad_note_to_xy(msg.note)
