@@ -7,14 +7,13 @@ def log(msg):
     logfile.write(str(datetime.datetime.now()) + " " + str(msg) + '\n')
     logfile.close()
 
-log("#### RUN ####")
+log('\n########################################################### RUN')
 
 s = sched.scheduler(time.time, time.sleep)
 
-def runState(state, firstTime):
+def runState(state, firstTime, midi_outputs):
     try:
         log("State: "+state)
-        midi_outputs = getAllOtherMidiOutputs()
 
         # First of all, settle anything happening
         for outport in midi_outputs:
@@ -27,12 +26,16 @@ def runState(state, firstTime):
                 print(config.get('edo'), "EDO")
                 
                 if firstTime:
-                    pads.display_text(lpx, "EDOPI", False)
+                    pads.display_text(lpx, "EDO "+str(config.get("edo")), False)
+                else:
+                    pads.display_text(lpx, "", False)
                 
                 # Note: the line below executes the X-EDO script
                 # ad libitum, and only returns a value on exit.
                 state = xedo.xedo(lpx, midi_outputs)
-                return runState(state, False)
+
+                s.enter(0, 1, runState, (state, False, midi_outputs,))
+                return
 
         elif state == 'exit':
              with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
@@ -47,7 +50,9 @@ def runState(state, firstTime):
             with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
                 switchToProgrammerMode(lpx, True)
                 state = screens.setScreen(lpx, midi_outputs, state)
-                return runState(state, False)
+
+                s.enter(0, 1, runState, (state, False, midi_outputs,))
+                return
     except:
         print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))
@@ -55,20 +60,22 @@ def runState(state, firstTime):
         # Crash management:
         for outport in midi_outputs:
             outport.panic()
-        with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
-            pads.display_reset(lpx, False)
-            pads.display_text(lpx, "OOPS: "+str(sys.exc_info()[0]), True)
+        #with mido.open_ioport(config.get('launchpad_midi_id')) as lpx:
+        #    pads.display_reset(lpx, False)
+        #    pads.display_text(lpx, "OOPS: "+str(sys.exc_info()[0]), True)
 
 # Test whether the Launchpad X is connected (iteratively, until it is)
 def testLPX(sc):
-    global lpx
     try:
         if config.get('launchpad_midi_id') in mido.get_input_names():
             print("Launchpad X connected")
-            runState("edo", True)
+            midi_outputs = getAllOtherMidiOutputs()
+            s.enter(0, 1, runState, ("edo", True, midi_outputs,))
+            return
         else:
             print("Waiting for Launchpad X...")
             s.enter(3, 1, testLPX, (sc,))
+            return
     except:
         print("Oops!")
         log("ERROR: "+str(sys.exc_info()[0]))

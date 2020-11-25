@@ -119,17 +119,20 @@ def checkMenuMessage(msg):
 
 # Display text
 def display_text(lpx, text, loop):
-    if loop:
-        loop_hex = '01'
+    if text == "":
+        hexmsg = 'F0 00 20 29 02 0C 07 F7'
     else:
-        loop_hex = '00'
+        if loop:
+            loop_hex = '01'
+        else:
+            loop_hex = '00'
 
-    speed = '15'
+        speed = '15'
 
-    text_bin = str(text).encode(encoding='utf_8')
-    text_hex = text_bin.hex()
-    
-    hexmsg = 'F0 00 20 29 02 0C 07 '+loop_hex+' '+speed+' 00 03 '+text_hex+' F7'
+        text_bin = str(text).encode(encoding='utf_8')
+        text_hex = text_bin.hex()
+        
+        hexmsg = 'F0 00 20 29 02 0C 07 '+loop_hex+' '+speed+' 00 03 '+text_hex+' F7'
     lpx.send(mido.Message.from_hex(hexmsg))
 
 

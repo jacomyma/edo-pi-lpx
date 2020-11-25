@@ -1,0 +1,11 @@
+2020-11-25
+
+When I switch menus very quickly, the script fails (the message is not displayed on the LPX)
+ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory
+Oops!
+# ERROR: <class 'rtmidi._rtmidi.SystemError'>
+Oops!
+# ERROR: <class 'UnboundLocalError'>
+ALSA lib seq_hw.c:466:(snd_seq_hw_open) open /dev/snd/seq failed: Cannot allocate memory
+
+=> Happens when switching menu repeatedly, fast
