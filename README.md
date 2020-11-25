@@ -99,41 +99,6 @@ Install rt-midi:
 pip3 install python-rtmidi
 ```
 
-### 6. Configure for your Launchpad X
-
-Basically, we just need to find the Launchpad X's proper identifier.
-
-#### 6.a. Plug the Launchpad X and wait until it switches on
-
-#### 6.b. Find its ID
-Open a python shell in a terminal, and get the ids of all midi things connected. It goes this way:
-```
-python3
->>> import mido
->>> mido_get_input_names()
-[Some list appears here]
->>> exit()
-```
-
-Look at the list. The Launchpad X should feature twice (because it has 2 distinct connection; only the second one is useful here). Copy the text of the second connection. For me it looks like this, but the numbers may change:
-```
-Launchpad X:Launchpad X MIDI 2 24:1
-```
-
-#### 6.c. Update the config
-
-In the folder where you installed the script, presumably ```/home/pi/edo-pi-lpx```, there is a default config file named ```config_default.ini```. Open it in a text editor (right-click > Text editor).
-
-At the top of the file there is a line with:
-```
-launchpad_midi_id = Launchpad X:Launchpad X MIDI 2 24:1
-```
-Replace the right part with the path that you have just obtained, if it differs.
-
-**NOTE: if you have tried to run the script before, a new file named ```config.ini``` has been generated. In that case, update that file too.**
-
-**NOTE: at this point you may just try the script for test purpose. Open a new terminal, browse to the repository with ```cd edo-pi-lpx/``` and type ```python3 run.py```. Exit with *CTRL+C*.**
-
 ### 7. Enable the code on boot
 
 In a nutshell, we add a line of code to execute the script on boot. But since it's the first time we run ```crontab``` it's going to configure.
