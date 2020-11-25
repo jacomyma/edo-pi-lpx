@@ -11,10 +11,10 @@ import mido, lpxPads as pads, config, math;
 def displayRatio(lpx, xy, ratio, fit):
     c = config.get(ratio)
     if c=="White":
-        pads.display(lpx, xy, [fit,fit,fit])
+        pads.display(lpx, xy, [0.8*fit,0.8*fit,0.8*fit])
         return True
     elif c=="Color":
-        pads.display(lpx, xy, pads.getRatioRGB(ratio, fit))
+        pads.display(lpx, xy, pads.getRatioRGB(ratio, 0.9*fit))
         return True
     else:
         return False
@@ -36,7 +36,7 @@ def display_default(xy, lpx):
     if key_12edo < 0 or key_12edo > 127:
         pads.display_vel(lpx, xy, 121)
     elif edonote%config.get('edo') == 0:
-        pads.display_vel(lpx, xy, 94)
+        pads.display(lpx, xy, [1, 0.1, 1])
     elif testRatio(lpx, xy, noteRatio, noteRange, "3/2", 3/2):
         pass
     elif testRatio(lpx, xy, noteRatio, noteRange, "4/3", 4/3):
@@ -246,12 +246,13 @@ def xedo(lpx, outports):
                     if xy[0]<8 and xy[1]<8:
                         edonote = xy_to_edonote(xy)
                         if msg_edonote == edonote:
-                            pads.display_vel(lpx, xy, 21)
+                            displayNoteOn(lpx, xy, msg.velocity/127)
 
         elif msg.type == "polytouch":
             msg_xy = pads.pad_note_to_xy(msg.note)
             msg_edonote = xy_to_edonote(msg_xy)
             send_aftertouch(msg, msg_edonote, round_robin, outports)
+            displayNoteOn(lpx, msg_xy, msg.value/127)
         
         elif msg.type == "control_change":
             if msg.value == 0:
@@ -259,3 +260,5 @@ def xedo(lpx, outports):
                 if check != False:
                     return check
 
+def displayNoteOn(lpx, xy, intensity):
+    pads.display(lpx, xy, [intensity, 1, intensity])
