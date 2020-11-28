@@ -104,8 +104,8 @@ def display_menu(lpx):
     display_multi(lpx, [
         [[0,8], [0.2*up*up*up*up*up*up, 0.6*up*up*up*up*up, 0.2+0.8*up*up]],   # UP
         [[1,8], [0.2*dn*dn*dn*dn*dn*dn, 0.6*dn*dn*dn*dn*dn, 0.2+0.8*dn*dn]],   # DOWN
-        [[2,8], [0.2+0.7*l*l, 0.1*l*l*l*l*l, 0.7*l*l*l*l*l*l]],   # LEFT
-        [[3,8], [0.2+0.7*r*r, 0.1*r*r*r*r*r, 0.7*r*r*r*r*r*r]],   # RIGHT
+        [[2,8], [0.2+0.6*l*l, 0.2*l*l*l*l*l, 0.9*l*l*l*l*l*l]],   # LEFT
+        [[3,8], [0.2+0.6*r*r, 0.2*r*r*r*r*r, 0.9*r*r*r*r*r*r]],   # RIGHT
     ])
     
     
