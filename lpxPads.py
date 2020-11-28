@@ -1,4 +1,5 @@
 import mido, math;
+import config
 
 # Build pads
 pads_midinote = []
@@ -90,6 +91,24 @@ def display_menu(lpx):
     # UI: Notes pad
     display_vel(lpx, menu['notes']['xy'], 102)
 
+    # Octave offset UP / DOWN + Edonote offset LEFT / RIGHT
+    oo = config.get('octave_offset')
+    vrange = 6
+    up = min(vrange, max(0, vrange-oo))/vrange
+    dn = min(vrange, max(0, vrange+oo))/vrange
+    eo = config.get('edonote_offset')
+    hrange = config.get('edo')
+    l = min(hrange, max(0, hrange+eo))/hrange
+    r = min(hrange, max(0, hrange-eo))/hrange
+    
+    display_multi(lpx, [
+        [[0,8], [0.2*up*up*up*up*up*up, 0.6*up*up*up*up*up, 0.2+0.8*up*up]],   # UP
+        [[1,8], [0.2*dn*dn*dn*dn*dn*dn, 0.6*dn*dn*dn*dn*dn, 0.2+0.8*dn*dn]],   # DOWN
+        [[2,8], [0.2+0.7*l*l, 0.1*l*l*l*l*l, 0.7*l*l*l*l*l*l]],   # LEFT
+        [[3,8], [0.2+0.7*r*r, 0.1*r*r*r*r*r, 0.7*r*r*r*r*r*r]],   # RIGHT
+    ])
+    
+    
 def display_menu_glow(lpx, xy):
     pad = xy_to_pad_note(xy)
     lpx.send(mido.Message('note_on', channel=2, note=pad, velocity=102))
@@ -99,20 +118,37 @@ def display_menu_glow(lpx, xy):
 menu = {
     'settings': {'xy': [4,8]},
     'notes': {'xy': [5,8]},
-    'exit': {'xy': [7,8]}
+    'exit': {'xy': [7,8]},
+    'UP': {'xy': [0,8]},
+    'DOWN': {'xy': [1,8]},
+    'LEFT': {'xy': [2,8]},
+    'RIGHT': {'xy': [3,8]},
 }
-menu['settings']['note'] = xy_to_pad_note(menu['settings']['xy'])
-menu['notes']['note'] = xy_to_pad_note(menu['notes']['xy'])
-menu['exit']['note'] = xy_to_pad_note(menu['exit']['xy'])
+for k in menu.keys():
+    menu[k]['note'] = xy_to_pad_note(menu[k]['xy'])
 
 # Check menu message
-def checkMenuMessage(msg):
-    if msg.control == menu['exit']['note']:
+def checkMenuMessage(lpx, msg):
+    if   msg.control == menu['exit']['note']:
         return "exit"
     elif msg.control == menu['settings']['note']:
         return "settings"
     elif msg.control == menu['notes']['note']:
         return "notes"
+    elif msg.control == menu['UP']['note']:
+        config.set('octave_offset', min(6, config.get('octave_offset')+1))
+        display_menu(lpx)
+        return False
+    elif msg.control == menu['DOWN']['note']:
+        config.set('octave_offset', max(-6, config.get('octave_offset')-1))
+        display_menu(lpx)
+        return False
+    elif msg.control == menu['LEFT']['note']:
+        config.set('edonote_offset', max(-config.get('edo'), config.get('edonote_offset')-1))
+        return False
+    elif msg.control == menu['RIGHT']['note']:
+        config.set('edonote_offset', min(config.get('edo'), config.get('edonote_offset')+1))
+        return False
     else:
         return False
 

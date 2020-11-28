@@ -51,7 +51,7 @@ def setScreen(lpx, outports, screen):
     for msg in lpx:
         if msg.type == "control_change":
             if msg.value == 0:
-                check = pads.checkMenuMessage(msg)
+                check = pads.checkMenuMessage(lpx, msg)
                 if check != False:
                     if check == screen:
                         return "edo"
@@ -82,6 +82,8 @@ def setScreen(lpx, outports, screen):
                 edo = 1 + xy[0] + 8*(7-xy[1])
                 pads.display_text(lpx, str(edo), False)
                 config.set('edo', edo)
+                config.set('octave_offset', 0)
+                config.set('edonote_offset', 0)
                 displayEdoPads(lpx)
             elif submenu == 'row':
                 if xy[1] == 7:
@@ -197,7 +199,7 @@ def displayEdoSubmenu(lpx):
 def displayEdoPads(lpx):
     rgb_low  = [0.2, 0.2, 0.2]
     rgb_high = [1.0, 1.0, 1.0]
-    rgb_12   = [0.2, 0.1, 0.3]
+    rgb_12   = [0.3, 0.1, 0.2]
     rgb_12h  = [0.8, 0.2, 1.0]
     pads.display_multi(lpx, [
         [[0,7], rgb_high if config.get('edo')==1  else rgb_low],   # EDO 01

@@ -18,6 +18,7 @@ def runState(state, firstTime, lpx, midi_outputs):
         # First of all, settle anything happening
         for outport in midi_outputs:
             outport.panic()
+            
         # Then change the state    
         if state == 'edo':
             switchToProgrammerMode(lpx, True)
@@ -27,7 +28,7 @@ def runState(state, firstTime, lpx, midi_outputs):
                 pads.display_text(lpx, "EDO "+str(config.get("edo")), False)
             else:
                 pads.display_text(lpx, "", False)
-            
+                
             # Note: the line below executes the X-EDO script
             # ad libitum, and only returns a value on exit.
             state = xedo.xedo(lpx, midi_outputs)

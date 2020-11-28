@@ -9,6 +9,10 @@ def get(k):
         return int(config['EDO']['root_note'])
     elif k == 'row_offset':
         return int(config['EDO']['row_offset'])
+    elif k == 'edonote_offset':
+        return int(config['EDO']['edonote_offset'])
+    elif k == 'octave_offset':
+        return int(config['EDO']['octave_offset'])
     elif k == 'launchpad_midi_id':
         return config['MIDI']['launchpad_midi_id']
     elif k == 'pitch_bend_range_semitones':
@@ -87,6 +91,12 @@ def set(k,v):
         writeConfig()
     elif k == 'row_offset' and isinstance(v, int):
         config['EDO']['row_offset'] = str(v)
+        writeConfig()
+    elif k == 'edonote_offset' and isinstance(v, int):
+        config['EDO']['edonote_offset'] = str(v)
+        writeConfig()
+    elif k == 'octave_offset' and isinstance(v, int):
+        config['EDO']['octave_offset'] = str(v)
         writeConfig()
     elif k == 'launchpad_midi_id' and isinstance(v, str):
         config['MIDI']['launchpad_midi_id'] = v

@@ -31,11 +31,11 @@ def display_default(xy, lpx):
     edo = config.get('edo')
     edonote = xy_to_edonote(xy)
     [key_12edo, pitch_correction] = edonote_to_12edo(edonote)
-    noteRatio = (edonote%edo) / edo
+    noteRatio = ((edonote-config.get('edonote_offset'))%edo) / edo
     noteRange = 0.5 / edo
     if key_12edo < 0 or key_12edo > 127:
         pads.display_vel(lpx, xy, 121)
-    elif edonote%config.get('edo') == 0:
+    elif (edonote-config.get('edonote_offset'))%config.get('edo') == 0:
         pads.display(lpx, xy, [1, 0.1, 1])
     elif testRatio(lpx, xy, noteRatio, noteRange, "3/2", 3/2):
         pass
@@ -78,7 +78,7 @@ def xy_to_edonote(xy):
     else:
         bottomleft = -27 #_12edo_to_edonote(64)-32
     [x,y] = xy
-    return bottomleft + x + config.get('row_offset') * y
+    return bottomleft + x + config.get('row_offset') * y + config.get('edo')*config.get('octave_offset') + config.get('edonote_offset')
 
 def edonote_to_12edo(edonote):
     octaves_offset = edonote/config.get('edo')
@@ -131,6 +131,24 @@ round_robin = {
     ],
     "current": 15,
 }
+
+def unplay_all_edonotes(round_robin, outports):
+    for chan in range(0,15):
+        allowed = round_robin['allowed_channels'][chan]
+        chan_edonote = round_robin['edonotes'][chan]
+        
+        
+        if allowed and chan_edonote != None:
+            # Compute note and pitch for edonote
+            [key_12edo, pitch_correction] = edonote_to_12edo(chan_edonote)
+            round_robin['edonotes'][chan] = None
+
+            # Unplay note
+            vel = mido.Message('note_on', channel=chan, note=key_12edo, velocity=0)
+            #off = mido.Message('note_off', channel=chan, note=key_12edo)
+            for outport in outports:
+                outport.send(vel)
+                #outport.send(off)
 
 def play_edonote(msg, edonote, round_robin, outports):
     # Compute note and pitch for edonote
@@ -215,7 +233,7 @@ def send_aftertouch(msg, edonote, round_robin, outports):
             for outport in outports:
                 outport.send(aftertouch)
 
-def xedo(lpx, outports):
+def resetPadsState(lpx):
     # Reset
     pads.display_reset(lpx, True)
     
@@ -223,6 +241,10 @@ def xedo(lpx, outports):
     for xy in pads.pads_xy:
         if xy[0]<8 and xy[1]<8:
             display_default(xy, lpx)
+    
+def xedo(lpx, outports):
+    # Reset
+    resetPadsState(lpx)
     
     # Listen to notes
     for msg in lpx:
@@ -256,9 +278,12 @@ def xedo(lpx, outports):
         
         elif msg.type == "control_change":
             if msg.value == 0:
-                check = pads.checkMenuMessage(msg)
+                check = pads.checkMenuMessage(lpx, msg)
                 if check != False:
                     return check
+                else:
+                    unplay_all_edonotes(round_robin, outports)
+                    resetPadsState(lpx)
 
 def displayNoteOn(lpx, xy, intensity):
     pads.display(lpx, xy, [intensity, 1, intensity])
