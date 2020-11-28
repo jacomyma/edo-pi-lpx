@@ -36,14 +36,16 @@ def getRatioName(ratio):
     elif ratio == "12/7":
         return "Septimal Major Sixth"
         
+submenu_notes = 'edo'
+submenu_settings = 'settings' # No submenus for the moment
 def setScreen(lpx, outports, screen):
-    global submenu
+    global submenu, submenu_notes, submenu_settings
 
     # Set initial submenu
     if screen == 'notes':
-        submenu = 'edo'
+        submenu = submenu_notes
     elif screen == 'settings':
-        submenu = 'settings' # No submenus for the moment
+        submenu = submenu_settings
 
     initSubmenu(lpx, screen)
     
@@ -62,18 +64,21 @@ def setScreen(lpx, outports, screen):
                     if msg.control == pads.xy_to_pad_note([8, 7]):
                         if screen == 'notes' and submenu != 'edo':
                             submenu = 'edo'
+                            submenu_notes = 'edo'
                             initSubmenu(lpx, screen)
                             
                     # Submenu 2
                     elif msg.control == pads.xy_to_pad_note([8, 6]):
                         if screen == 'notes' and submenu != 'row':
                             submenu = 'row'
+                            submenu_notes = 'row'
                             initSubmenu(lpx, screen)
                             
                     # Submenu 3
                     elif msg.control == pads.xy_to_pad_note([8, 5]):
                         if screen == 'notes' and submenu != 'color':
                             submenu = 'color'
+                            submenu_notes = 'color'
                             initSubmenu(lpx, screen)
                         
         elif msg.type == 'note_on' and msg.velocity > 2:
