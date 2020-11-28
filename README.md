@@ -10,9 +10,13 @@ Use a Launchpad X as a polyphonic, expressive, **microtonal** controller for MPE
 
 Plug the Launchpad X to the Raspberry Pi where the script has been installed (in the USB 3.0 ports, in blue) and any MPE-compatible USB synth (e.g. Modal Skulpt, ContinuuMini). Power the Raspberry Pi. After a few seconds, the Launchpad X connects to the synth and switches to EDO-PI mode. No interaction with the Raspberry Pi is required. Just power it off after use.
 
+👉 [How to use (complete)](https://github.com/jacomyma/edo-pi-lpx/wiki/How-to-use)
+
 ## How to install (in short)
 
 Get a Rapsberry Pi with the default configuration. Download the script on it, and run the few commands required for the installation. That's all.
+
+👉 [How to install (complete)](https://github.com/jacomyma/edo-pi-lpx/wiki/How-to-install)
 
 ## Disclaimer
 
