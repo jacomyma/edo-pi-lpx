@@ -4,7 +4,7 @@
 
 Use a Launchpad X as a polyphonic, expressive, **microtonal** controller for MPE-compatible hardware synths. No DAW required, but a Raspberry Pi. Can be powered out of a USB power bank for portability. The script creates a configurable EDO layout (equal division of the octave) just like that:
 
-[Insert image]
+![General layout](https://github.com/jacomyma/edo-pi-lpx/blob/master/resources/Artboard%2013%20-%2072%20ppi.png?raw=true)
 
 ## How to use (in short)
 
@@ -30,3 +30,7 @@ The documentation is in CC-BY-SA. The software is in GPL v3.
 
 * [How to install](https://github.com/jacomyma/edo-pi-lpx/wiki/How-to-install)
 * [How to use](https://github.com/jacomyma/edo-pi-lpx/wiki/How-to-use) (manual)
+
+---
+
+![Raspberry Pi and Launchpad X](https://github.com/jacomyma/edo-pi-lpx/blob/master/resources/EDO-PI-LPX-photo.jpg?raw=true)
