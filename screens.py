@@ -85,7 +85,8 @@ def setScreen(lpx, outports, screen):
             xy = pads.pad_note_to_xy(msg.note)
             if submenu == 'edo':
                 edo = 1 + xy[0] + 8*(7-xy[1])
-                pads.display_text(lpx, str(edo), False)
+                if config.get('help'):
+                    pads.display_text(lpx, str(edo), False)
                 config.set('edo', edo)
                 config.set('octave_offset', 0)
                 config.set('edonote_offset', 0)
@@ -93,7 +94,8 @@ def setScreen(lpx, outports, screen):
             elif submenu == 'row':
                 if xy[1] == 7:
                     row_offset = xy[0]+1
-                    pads.display_text(lpx, str(row_offset), False)
+                    if config.get('help'):
+                        pads.display_text(lpx, str(row_offset), False)
                     config.set('row_offset', row_offset)
                     displayRowPads(lpx)
             elif submenu == 'color':
@@ -137,11 +139,13 @@ def setScreen(lpx, outports, screen):
                         val = "White"
                     if xy[0] == 2 or xy[0] == 6:
                         val = "Color"
-                    pads.display_text(lpx, ratio+" "+val, False)
+                    if config.get('help'):
+                        pads.display_text(lpx, ratio+" "+val, False)
                     config.set(ratio, val)
                     displayColorPads(lpx)
                 else:
-                    pads.display_text(lpx, ratio+" "+getRatioName(ratio), False)
+                    if config.get('help'):
+                        pads.display_text(lpx, ratio+" "+getRatioName(ratio), False)
             
             elif submenu == 'settings':
                 if (xy[1] == 7 and xy[0]>0) or (xy[1] == 6 and xy[0]<7):
@@ -149,7 +153,8 @@ def setScreen(lpx, outports, screen):
                     if len(channel) == 1:
                         channel = "0" + channel
                     chanData = config.get('send_channel_'+channel)
-                    pads.display_text(lpx, 'Ch.' + channel + (' OFF' if chanData else ' ON'), False)
+                    if config.get('help'):
+                        pads.display_text(lpx, 'Ch.' + channel + (' OFF' if chanData else ' ON'), False)
                     config.set('send_channel_'+channel, chanData==False)
                     displaySettingsPads(lpx)
                 elif xy[1] == 4 and xy[0]<4:
@@ -161,8 +166,14 @@ def setScreen(lpx, outports, screen):
                         pitchRange = 96
                     else:
                         pitchRange = 48
-                    pads.display_text(lpx, str(pitchRange)+" Pitch Range", False)
+                    if config.get('help'):
+                        pads.display_text(lpx, str(pitchRange)+" Pitch Range", False)
                     config.set('pitch_bend_range_semitones', pitchRange)
+                    displaySettingsPads(lpx)
+                elif xy[0] == 7 and xy[1] == 0:
+                    config.set('help', not config.get('help'))
+                    if config.get('help'):
+                        pads.display_text(lpx, "Help ON", False)
                     displaySettingsPads(lpx)
             
 
@@ -175,21 +186,25 @@ def initSubmenu(lpx, screen):
         pads.display_menu_glow(lpx, pads.menu['notes']['xy'])
     elif screen == 'settings':
         pads.display_menu_glow(lpx, pads.menu['settings']['xy'])
-        
+    
     if submenu == 'edo':
-        pads.display_text(lpx, 'EDO', False)
+        if config.get('help'):
+            pads.display_text(lpx, 'EDO', False)
         displayEdoSubmenu(lpx)
         displayEdoPads(lpx)
     elif submenu == 'row':
-        pads.display_text(lpx, 'ROW', False)
+        if config.get('help'):
+            pads.display_text(lpx, 'ROW', False)
         displayEdoSubmenu(lpx)
         displayRowPads(lpx)
     elif submenu == 'color':
-        pads.display_text(lpx, 'COLOR', False)
+        if config.get('help'):
+            pads.display_text(lpx, 'COLOR', False)
         displayEdoSubmenu(lpx)
         displayColorPads(lpx)
     elif submenu == 'settings':
-        pads.display_text(lpx, 'MPE', False)
+        if config.get('help'):
+            pads.display_text(lpx, 'MPE', False)
         displaySettingsPads(lpx)
 
 def displayEdoSubmenu(lpx):
@@ -376,4 +391,7 @@ def displaySettingsPads(lpx):
         [[1,4], rgb_high if config.get('pitch_bend_range_semitones') == 24  else rgb_low],   # Pitch range 24
         [[2,4], rgb_48h  if config.get('pitch_bend_range_semitones') == 48  else rgb_48 ],   # Pitch range 48
         [[3,4], rgb_high if config.get('pitch_bend_range_semitones') == 96  else rgb_low],   # Pitch range 96
+        
+        [[7,0], rgb_high if config.get('help')  else rgb_low],   # Help
+        
     ])

@@ -13,6 +13,8 @@ def get(k):
         return int(config['EDO']['edonote_offset'])
     elif k == 'octave_offset':
         return int(config['EDO']['octave_offset'])
+    elif k == 'help':
+        return config['OTHER']['help'] == "True"
     elif k == 'launchpad_midi_id':
         return config['MIDI']['launchpad_midi_id']
     elif k == 'pitch_bend_range_semitones':
@@ -97,6 +99,9 @@ def set(k,v):
         writeConfig()
     elif k == 'octave_offset' and isinstance(v, int):
         config['EDO']['octave_offset'] = str(v)
+        writeConfig()
+    elif k == 'help' and (v==True or v==False):
+        config['OTHER']['help'] = "True" if v else "False"
         writeConfig()
     elif k == 'launchpad_midi_id' and isinstance(v, str):
         config['MIDI']['launchpad_midi_id'] = v
