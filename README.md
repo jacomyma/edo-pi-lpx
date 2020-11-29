@@ -16,6 +16,20 @@ Plug the Launchpad X to the Raspberry Pi where the script has been installed (in
 
 Get a Rapsberry Pi with the default configuration. Download the script on it, and run the few commands required for the installation. That's all.
 
+```
+# Download the repository
+git clone https://github.com/jacomyma/edo-pi-lpx.git
+
+# Install two dependencies
+pip3 install mido
+pip3 install python-rtmidi
+
+# Set up the script to run on boot
+crontab -e
+# Then add the following line to the CRON table:
+@reboot sleep 12 && cd /home/pi/edo-pi-lpx && python3 run.py
+```
+
 👉 [How to install (complete)](https://github.com/jacomyma/edo-pi-lpx/wiki/How-to-install)
 
 ## Disclaimer
