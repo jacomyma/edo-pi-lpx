@@ -1,4 +1,4 @@
-import mido, lpxPads as pads, config;
+import mido, lpxPads as pads, xedo, config;
 
 def getRatioName(ratio):
     if ratio == "2/1":
@@ -156,6 +156,7 @@ def setScreen(lpx, outports, screen):
                     if config.get('help'):
                         pads.display_text(lpx, 'Ch.' + channel + (' OFF' if chanData else ' ON'), False)
                     config.set('send_channel_'+channel, chanData==False)
+                    xedo.initRoundRobin()
                     displaySettingsPads(lpx)
                 elif xy[1] == 4 and xy[0]<4:
                     if xy[0] == 0:

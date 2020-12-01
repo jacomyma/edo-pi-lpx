@@ -92,45 +92,48 @@ def edonote_to_12edo(edonote):
 # Note: channels 1 and 16 should not be used, as they are
 # considered master, which means their values, including pitch,
 # apply to all.
-round_robin = {
-    "allowed_channels": [
-        config.get("send_channel_01"),
-        config.get("send_channel_02"),
-        config.get("send_channel_03"),
-        config.get("send_channel_04"),
-        config.get("send_channel_05"),
-        config.get("send_channel_06"),
-        config.get("send_channel_07"),
-        config.get("send_channel_08"),
-        config.get("send_channel_09"),
-        config.get("send_channel_10"),
-        config.get("send_channel_11"),
-        config.get("send_channel_12"),
-        config.get("send_channel_13"),
-        config.get("send_channel_14"),
-        config.get("send_channel_15"),
-        config.get("send_channel_16"),
-    ],
-    "edonotes": [
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None
-    ],
-    "current": 15,
+def initRoundRobin():
+    global round_robin
+    round_robin = {
+        "allowed_channels": [
+            config.get("send_channel_01"),
+            config.get("send_channel_02"),
+            config.get("send_channel_03"),
+            config.get("send_channel_04"),
+            config.get("send_channel_05"),
+            config.get("send_channel_06"),
+            config.get("send_channel_07"),
+            config.get("send_channel_08"),
+            config.get("send_channel_09"),
+            config.get("send_channel_10"),
+            config.get("send_channel_11"),
+            config.get("send_channel_12"),
+            config.get("send_channel_13"),
+            config.get("send_channel_14"),
+            config.get("send_channel_15"),
+            config.get("send_channel_16"),
+        ],
+        "edonotes": [
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None
+        ],
+        "current": 15,
 }
+initRoundRobin()
 
 def unplay_all_edonotes(round_robin, outports):
     for chan in range(0,15):
