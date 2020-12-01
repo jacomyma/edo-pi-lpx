@@ -77,7 +77,6 @@ def testLPX(sc):
             midi_outputs = getAllOtherMidiOutputs()
             with mido.open_ioport(lpx_port_name) as lpx:
                 runState("edo", True, lpx, midi_outputs)
-                #s.enter(0, 1, runState, ("edo", True, lpx, midi_outputs,))
         else:
             print("Waiting for Launchpad X...")
             s.enter(3, 1, testLPX, (sc,))
